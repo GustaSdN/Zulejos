@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Zulejos Mobile Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Beautiful+People&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --neon-cyan:#00f0ff;--neon-pink:#ff2d95;--neon-purple:#b537f2;--neon-yellow:#ffe600;
+    --neon-orange:#ff6b35;--bg-deep:#0a0420;--bg-mid:#150833;--bg-panel:#1a0b3d;--bg-panel-2:#230f4d;
+    --text-main:#f0e9ff;--text-dim:#8a7bb0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;overflow:hidden;
+    font-family:'Trebuchet MS','Segoe UI',BlinkMacSystemFont,sans-serif;
+    color:var(--text-main);user-select:none;touch-action:manipulation;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(255,45,149,.25) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 0%, rgba(0,240,255,.15) 0%, transparent 50%),
+      linear-gradient(180deg, #0a0420 0%, #150833 40%, #2a0d52 100%);
+    background-attachment:fixed;
+  }
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+    background-image:
+      linear-gradient(rgba(0,240,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(180deg, transparent 0%, black 40%, black 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 40%, black 70%, transparent 100%);
+  }
+  body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.09) 0px, rgba(0,0,0,.09) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  body{overscroll-behavior:none;}
+  .app{height:100%;width:100%;position:relative;z-index:2;}
+  .screen{display:none;position:absolute;inset:0;flex-direction:column;}
+  .screen.active{display:flex;}
+  .retro-sun{
+    position:absolute;left:50%;top:12%;transform:translateX(-50%);
+    width:220px;height:220px;border-radius:50%;
+    background:linear-gradient(180deg, #ffe600 0%, #ff6b35 40%, #ff2d95 75%, #b537f2 100%);
+    box-shadow:0 0 60px rgba(255,45,149,.5),0 0 120px rgba(255,107,53,.3);
+    z-index:0;pointer-events:none;opacity:.85;
+    mask-image: repeating-linear-gradient(180deg, black 0px, black 10px, transparent 10px, transparent 14px);
+    -webkit-mask-image: repeating-linear-gradient(180deg, black 0px, black 10px, transparent 10px, transparent 14px);
+    animation: sunPulse 5s ease-in-out infinite;
+  }
+  @keyframes sunPulse{
+    0%,100%{box-shadow:0 0 60px rgba(255,45,149,.5),0 0 120px rgba(255,107,53,.3);}
+    50%{box-shadow:0 0 90px rgba(255,45,149,.7),0 0 160px rgba(255,107,53,.5);}
+  }
+  .btn{
+    border:1.5px solid rgba(0,240,255,.5);
+    border-radius:12px;padding:13px 18px;font-size:15px;font-weight:700;
+    background:linear-gradient(180deg, rgba(35,15,77,.9), rgba(21,8,51,.95));
+    color:var(--neon-cyan);cursor:pointer;transition:.18s;font-family:inherit;
+    letter-spacing:.5px;position:relative;overflow:hidden;
+    text-shadow:0 0 8px rgba(0,240,255,.5);
+    box-shadow:0 4px 20px rgba(0,240,255,.15),inset 0 1px 0 rgba(255,255,255,.08);
+    touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  }
+  .btn::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(120deg, transparent 30%, rgba(0,240,255,.12) 50%, transparent 70%);
+    transform:translateX(-100%);transition:.6s;
+  }
+  .btn:hover::before{transform:translateX(100%);}
+  .btn:active{transform:scale(.97);}
+  .btn.primary{
+    background:linear-gradient(135deg, #ff2d95 0%, #b537f2 50%, #00f0ff 100%);
+    color:#fff;border-color:rgba(255,255,255,.4);
+    text-shadow:0 1px 4px rgba(0,0,0,.5);
+    box-shadow:0 6px 22px rgba(255,45,149,.4),0 0 40px rgba(181,55,242,.3),inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .btn.primary:disabled{
+    background:linear-gradient(135deg, #2a2050, #1a1035);
+    color:#5d4a8a;box-shadow:none;border-color:rgba(0,240,255,.15);text-shadow:none;
+  }
+  .btn.big{width:100%;padding:16px;font-size:16px;}
+  .btn.ghost{background:transparent;color:var(--text-dim);border-color:rgba(138,123,176,.3);
+    font-size:13px;padding:10px;text-shadow:none;box-shadow:none;}
+  .btn.sm{padding:9px 14px;font-size:13px;}
+  .join-row{display:flex;gap:8px;margin-top:12px;}
+  .inp{
+    flex:1;min-width:0;border-radius:12px;
+    border:1.5px solid rgba(0,240,255,.3);
+    background:rgba(10,4,32,.7);color:var(--text-main);
+    padding:13px;font-size:16px;text-align:center;letter-spacing:3px;
+    text-transform:uppercase;font-family:inherit;outline:none;
+    box-shadow:inset 0 0 20px rgba(0,240,255,.06);transition:.2s;
+  }
+  .inp:focus{border-color:var(--neon-cyan);box-shadow:0 0 0 3px rgba(0,240,255,.15), inset 0 0 20px rgba(0,240,255,.1);}
+  .inp.name{letter-spacing:0;text-transform:none;text-align:left;margin-bottom:8px;font-size:15px;}
+  .logo-wrap{position:relative;display:inline-block;margin:0 auto 10px;padding:4px 10px 8px;line-height:1;}
+  .logo-wrap .logo-layer{
+    font-family:'Beautiful People','Brush Script MT',cursive;
+    font-size:78px;line-height:1;letter-spacing:1px;font-weight:400;
+    white-space:nowrap;display:block;margin:0;padding:0;
+  }
+  .logo-wrap .logo-glow{
+    position:absolute;top:4px;left:10px;color:#ff2d95;
+    filter:blur(9px) saturate(1.7);opacity:.8;z-index:0;pointer-events:none;
+    animation: logoGlowPulse 3.2s ease-in-out infinite;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    will-change:filter,opacity;
+  }
+  @keyframes logoGlowPulse{
+    0%,100%{opacity:.65;filter:blur(9px) saturate(1.5);}
+    50%{opacity:.95;filter:blur(13px) saturate(1.9);}
+  }
+  .logo-wrap .logo-front{
+    position:relative;z-index:1;
+    background:linear-gradient(180deg,#ffffff 0%,#fff4a3 18%,#ffe600 34%,#ff6b35 58%,#ff2d95 78%,#b537f2 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    filter:none;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    text-rendering:geometricPrecision;transform:translateZ(0);
+  }
+  .tagline{color:var(--neon-cyan);font-size:11px;margin:6px 0 26px;letter-spacing:6px;
+    text-transform:uppercase;text-shadow:0 0 12px rgba(0,240,255,.8);font-weight:700;}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--neon-purple);font-size:11px;margin:16px 0;letter-spacing:3px;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;
+    background:linear-gradient(90deg,transparent,var(--neon-purple),transparent);}
+  .hint{color:var(--text-dim);font-size:12px;line-height:1.5;margin-top:14px;}
+  #scr-home{align-items:center;justify-content:center;padding:20px;overflow-y:auto;position:relative;}
+  #scr-home .retro-sun{top:8%;opacity:.55;}
+  .home-inner{width:100%;max-width:340px;text-align:center;position:relative;z-index:2;
+    padding:26px 20px;border-radius:22px;
+    background:linear-gradient(180deg, rgba(26,11,61,.75), rgba(21,8,51,.9));
+    border:1.5px solid rgba(0,240,255,.25);
+    box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 60px rgba(181,55,242,.15),inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(10px);
+  }
+  #scr-setup,#scr-guest-join{align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+  .setup-inner{width:100%;max-width:340px;text-align:center;
+    padding:24px 20px;border-radius:22px;
+    background:linear-gradient(180deg, rgba(26,11,61,.8), rgba(21,8,51,.92));
+    border:1.5px solid rgba(0,240,255,.25);
+    box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 60px rgba(181,55,242,.15);
+    backdrop-filter:blur(10px);
+  }
+  .setup-title{font-size:22px;margin:0 0 4px;letter-spacing:2px;color:var(--neon-cyan);
+    text-shadow:0 0 16px rgba(0,240,255,.7),0 0 30px rgba(0,240,255,.4);
+    font-weight:900;font-family:Impact,'Arial Black',sans-serif;}
+  .setup-sub{color:var(--text-dim);font-size:12.5px;margin:0 0 18px;}
+  .setup-count{display:flex;gap:6px;justify-content:center;margin-bottom:16px;}
+  .setup-count .btn{flex:1;padding:11px 4px;font-size:12.5px;}
+  .setup-count .btn.active{background:linear-gradient(135deg, #ff2d95, #b537f2);
+    color:#fff;border-color:rgba(255,255,255,.4);
+    box-shadow:0 0 20px rgba(255,45,149,.5),inset 0 1px 0 rgba(255,255,255,.3);
+    text-shadow:0 0 8px rgba(255,255,255,.5);}
+  #setupNames{margin-bottom:12px;}
+  .mode-toggle{display:flex;gap:6px;margin-bottom:16px;}
+  .mode-toggle .btn{flex:1;padding:11px 4px;font-size:12.5px;}
+  .mode-toggle .btn.active{background:linear-gradient(135deg, #ff2d95, #b537f2);
+    color:#fff;border-color:rgba(255,255,255,.4);
+    box-shadow:0 0 20px rgba(255,45,149,.5),inset 0 1px 0 rgba(255,255,255,.3);
+    text-shadow:0 0 8px rgba(255,255,255,.5);}
+  .join-room-code{
+    font-size:26px;letter-spacing:8px;display:block;margin:8px 0 18px;
+    color:var(--neon-cyan);font-weight:900;font-family:Impact,'Arial Black',sans-serif;
+    text-shadow:0 0 20px rgba(0,240,255,.7);
+  }
+  #scr-pass{align-items:center;justify-content:center;padding:24px;text-align:center;position:relative;}
+  #scr-pass .retro-sun{top:10%;opacity:.35;width:180px;height:180px;}
+  .pass-inner{width:100%;max-width:340px;position:relative;z-index:2;}
+  .pass-icon{font-size:52px;margin-bottom:14px;
+    filter:drop-shadow(0 0 20px rgba(0,240,255,.7));animation: passFloat 2.5s ease-in-out infinite;}
+  @keyframes passFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  .pass-label{font-size:12px;color:var(--neon-pink);text-transform:uppercase;letter-spacing:4px;margin:0 0 10px;
+    text-shadow:0 0 12px rgba(255,45,149,.7);}
+  .pass-name{font-size:30px;font-weight:900;margin:0 0 8px;letter-spacing:1px;
+    font-family:Impact,'Arial Black',sans-serif;
+    background:linear-gradient(180deg, #00f0ff, #b537f2, #ff2d95);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 20px rgba(0,240,255,.5));word-break:break-word;}
+  .pass-meta{font-size:13px;color:var(--text-dim);margin:0 0 28px;}
+  .pass-meta b{color:var(--neon-yellow);font-weight:800;text-shadow:0 0 10px rgba(255,230,0,.6);}
+  #scr-lobby{align-items:center;justify-content:center;padding:18px;overflow-y:auto;position:relative;}
+  #scr-lobby .retro-sun{top:5%;opacity:.25;width:150px;height:150px;}
+  .lobby-inner{width:100%;max-width:340px;text-align:center;position:relative;z-index:2;
+    padding:22px 18px;border-radius:22px;
+    background:linear-gradient(180deg, rgba(26,11,61,.8), rgba(21,8,51,.92));
+    border:1.5px solid rgba(0,240,255,.25);
+    box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 60px rgba(181,55,242,.15);backdrop-filter:blur(10px);}
+  .lobby-inner h2{font-size:13px;color:var(--text-dim);font-weight:500;margin:0 0 12px;letter-spacing:3px;text-transform:uppercase;}
+  .code{font-size:32px;letter-spacing:10px;display:block;margin-top:6px;font-weight:900;
+    font-family:Impact,'Arial Black',sans-serif;
+    background:linear-gradient(180deg,#00f0ff,#b537f2,#ff2d95);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 15px rgba(0,240,255,.6));}
+  .qrwrap{background:#fff;border-radius:16px;padding:12px;display:inline-block;margin:6px auto 4px;
+    box-shadow:0 0 30px rgba(0,240,255,.5),0 0 60px rgba(181,55,242,.35);
+    border:2px solid rgba(0,240,255,.6);position:relative;}
+  .qrwrap::before{content:'';position:absolute;inset:-4px;border-radius:20px;
+    background:linear-gradient(135deg,#ff2d95,#b537f2,#00f0ff);
+    z-index:-1;filter:blur(12px);opacity:.7;}
+  .qrwrap img{display:block;width:180px;height:180px;border-radius:6px;}
+  .plist{list-style:none;padding:0;margin:14px 0;display:flex;flex-direction:column;gap:6px;}
+  .plist li{background:linear-gradient(90deg, rgba(35,15,77,.8), rgba(21,8,51,.9));
+    border:1.5px solid rgba(0,240,255,.2);border-radius:10px;padding:10px 12px;
+    text-align:left;font-size:13.5px;display:flex;align-items:center;gap:10px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:.2s;}
+  .plist li.editable{cursor:pointer;}
+  .plist li.editable:hover{border-color:var(--neon-cyan);box-shadow:0 0 16px rgba(0,240,255,.3);}
+  .plist .num{width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+    background:linear-gradient(135deg,#00f0ff,#b537f2);color:#fff;box-shadow:0 0 12px rgba(0,240,255,.5);}
+  .plist .edit-tag{font-size:10px;color:var(--neon-cyan);text-shadow:0 0 8px rgba(0,240,255,.6);}
+  #scr-game{height:100%;overflow:hidden;position:relative;}
+  .hud{display:flex;gap:6px;padding:7px 10px;align-items:center;
+    background:linear-gradient(180deg, rgba(10,4,32,.95), rgba(21,8,51,.85));
+    border-bottom:1.5px solid rgba(0,240,255,.25);
+    box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 30px rgba(0,240,255,.08);
+    flex:0 0 auto;position:relative;z-index:3;}
+  .hud-round{font-size:11px;color:var(--neon-cyan);text-transform:uppercase;letter-spacing:2px;
+    flex:0 0 auto;padding-right:4px;font-weight:800;text-shadow:0 0 10px rgba(0,240,255,.8);}
+  .hud-players{display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;}
+  .hud-players::-webkit-scrollbar{display:none;}
+  .pchip{display:flex;gap:6px;align-items:center;
+    background:linear-gradient(180deg, rgba(35,15,77,.7), rgba(21,8,51,.85));
+    border-radius:20px;padding:5px 11px;font-size:11px;white-space:nowrap;
+    border:1.5px solid rgba(0,240,255,.15);flex:0 0 auto;transition:.2s;cursor:pointer;}
+  .pchip:active{transform:scale(.96);}
+  .pchip.active{border-color:var(--neon-cyan);
+    background:linear-gradient(180deg, rgba(0,240,255,.12), rgba(181,55,242,.12));
+    box-shadow:0 0 16px rgba(0,240,255,.5),inset 0 0 12px rgba(0,240,255,.1);}
+  .pchip.me .pname{color:var(--neon-cyan);font-weight:700;text-shadow:0 0 8px rgba(0,240,255,.6);}
+  .pchip.viewing{
+    outline:2px solid var(--neon-yellow);
+    box-shadow:0 0 14px rgba(255,230,0,.6),inset 0 0 10px rgba(255,230,0,.15);
+  }
+  .pchip.bot .pname{color:#ff9a9a;}
+  .pscore{font-weight:800;color:var(--neon-yellow);text-shadow:0 0 8px rgba(255,230,0,.5);}
+  .sound-toggle{
+    flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+    border:1.5px solid rgba(0,240,255,.45);
+    background:linear-gradient(180deg, rgba(35,15,77,.9), rgba(21,8,51,.95));
+    color:var(--neon-cyan);font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    box-shadow:0 2px 12px rgba(0,240,255,.25),inset 0 1px 0 rgba(255,255,255,.08);
+    transition:.2s;touch-action:manipulation;font-family:inherit;position:relative;
+  }
+  .sound-toggle:active{transform:scale(.9);}
+  .sound-toggle.muted{
+    border-color:rgba(138,123,176,.35);color:#5d4a8a;
+    box-shadow:none;text-shadow:none;
+  }
+  .sound-toggle.muted::after{
+    content:'';position:absolute;inset:8px;
+    background:linear-gradient(180deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+    transform:rotate(-45deg);border-radius:2px;opacity:.9;
+  }
+  .music-toggle{
+    flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+    border:1.5px solid rgba(255,45,149,.5);
+    background:linear-gradient(180deg, rgba(35,15,77,.9), rgba(21,8,51,.95));
+    color:var(--neon-pink);font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    box-shadow:0 2px 12px rgba(255,45,149,.25),inset 0 1px 0 rgba(255,255,255,.08);
+    transition:.2s;touch-action:manipulation;font-family:inherit;position:relative;
+  }
+  .music-toggle:active{transform:scale(.9);}
+  .music-toggle.playing{
+    animation: musicPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes musicPulse{
+    0%,100%{box-shadow:0 2px 12px rgba(255,45,149,.25),inset 0 1px 0 rgba(255,255,255,.08);}
+    50%{box-shadow:0 2px 18px rgba(255,45,149,.7),0 0 26px rgba(255,45,149,.5),inset 0 1px 0 rgba(255,255,255,.15);}
+  }
+  .music-toggle.muted{
+    border-color:rgba(138,123,176,.35);color:#5d4a8a;
+    box-shadow:none;text-shadow:none;animation:none;
+  }
+  .music-toggle.muted::after{
+    content:'';position:absolute;inset:8px;
+    background:linear-gradient(180deg, transparent 45%, currentColor 45%, currentColor 55%, transparent 55%);
+    transform:rotate(-45deg);border-radius:2px;opacity:.9;
+  }
+  .table{flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
+  .factories{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:8px;}
+  .factory{background:linear-gradient(180deg, rgba(35,15,77,.7), rgba(21,8,51,.9));
+    border-radius:12px;padding:6px;display:grid;grid-template-columns:1fr 1fr;
+    gap:4px;aspect-ratio:1;place-items:center;
+    border:1.5px solid rgba(0,240,255,.25);
+    box-shadow:0 4px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);
+    transition:.18s;cursor:pointer;position:relative;overflow:hidden;}
+  .factory::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 30% 20%, rgba(0,240,255,.08), transparent 60%);
+    pointer-events:none;}
+  .factory:not(.empty):active{transform:scale(.95);}
+  .factory.empty{background:rgba(10,4,32,.4);border-style:dashed;border-color:rgba(0,240,255,.12);cursor:default;}
+  .factory.src-active{border-color:var(--neon-cyan);
+    box-shadow:0 0 24px rgba(0,240,255,.6),0 0 0 1px rgba(0,240,255,.5),inset 0 0 20px rgba(0,240,255,.15);
+    animation: srcPulse 1.4s ease-in-out infinite;}
+  @keyframes srcPulse{
+    0%,100%{box-shadow:0 0 24px rgba(0,240,255,.6),0 0 0 1px rgba(0,240,255,.5),inset 0 0 20px rgba(0,240,255,.15);}
+    50%{box-shadow:0 0 36px rgba(0,240,255,.9),0 0 0 2px rgba(0,240,255,.8),inset 0 0 24px rgba(0,240,255,.25);}
+  }
+  .center-area{background:linear-gradient(180deg, rgba(35,15,77,.7), rgba(21,8,51,.9));
+    border-radius:12px;padding:8px;border:1.5px solid rgba(181,55,242,.35);
+    box-shadow:0 4px 16px rgba(0,0,0,.4),inset 0 0 30px rgba(181,55,242,.08);
+    min-height:52px;transition:.18s;position:relative;overflow:hidden;}
+  .center-area::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(181,55,242,.1), transparent 70%);pointer-events:none;}
+  .center-area.src-active{border-color:var(--neon-cyan);
+    box-shadow:0 0 24px rgba(0,240,255,.6),inset 0 0 20px rgba(0,240,255,.15);
+    animation: srcPulse 1.4s ease-in-out infinite;}
+  .center-area.empty-src{opacity:.5;}
+  .center-label{font-size:9px;color:var(--neon-pink);text-transform:uppercase;letter-spacing:2px;
+    margin-bottom:6px;font-weight:800;text-shadow:0 0 8px rgba(255,45,149,.6);}
+  .center-tiles{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+  .firstmark{width:24px;height:24px;border-radius:50%;
+    background:linear-gradient(135deg,#ffe600,#ff6b35);color:#3a1400;font-size:10px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+    box-shadow:0 0 14px rgba(255,230,0,.7),inset 0 -2px 4px rgba(0,0,0,.3);}
+  .tile{width:100%;aspect-ratio:1;border-radius:50%;position:relative;
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.5);}
+  .tile::before{content:'';position:absolute;top:12%;left:22%;width:36%;height:28%;
+    border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);
+    pointer-events:none;}
+  .ctile{width:24px;height:24px;flex:0 0 auto;}
+  .c-azul{background:radial-gradient(circle at 32% 28%, #6ee7ff 0%, #00a8e0 40%, #0051a8 80%, #001d4d 100%);
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.35),0 0 12px rgba(0,168,224,.5);}
+  .c-amarelo{background:radial-gradient(circle at 32% 28%, #fff9a8 0%, #ffd400 40%, #e08f00 80%, #7a3f00 100%);
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.4),0 0 12px rgba(255,212,0,.55);}
+  .c-vermelho{background:radial-gradient(circle at 32% 28%, #ff8ac4 0%, #ff2d95 40%, #c40073 80%, #5a0030 100%);
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.35),0 0 12px rgba(255,45,149,.6);}
+  .c-preto{background:radial-gradient(circle at 32% 28%, #6a3fb8 0%, #2a0d52 40%, #150833 80%, #000 100%);
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.6),inset 0 3px 6px rgba(181,55,242,.5),0 0 12px rgba(181,55,242,.5);
+    border:1px solid rgba(181,55,242,.6);}
+  .c-branco{background:radial-gradient(circle at 32% 28%, #ffffff 0%, #f0e9ff 40%, #b0a0d8 80%, #6a5a90 100%);
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.35),inset 0 3px 6px rgba(255,255,255,.7),0 0 12px rgba(240,233,255,.6);}
+  .tile.dim{opacity:.25;filter:grayscale(.4);}
+  .tile.selected{outline:3px solid var(--neon-cyan);outline-offset:2px;
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.3),
+      0 0 24px var(--neon-cyan),0 0 40px rgba(0,240,255,.6);
+    animation: tileSelect 1.2s ease-in-out infinite;}
+  @keyframes tileSelect{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  .board{flex:0 0 auto;
+    background:linear-gradient(180deg, rgba(21,8,51,.9), rgba(10,4,32,.98));
+    border-top:1.5px solid rgba(0,240,255,.3);
+    box-shadow:0 -8px 30px rgba(0,0,0,.5),0 0 40px rgba(0,240,255,.08);
+    padding:6px 10px 10px;max-height:48vh;overflow:hidden;position:relative;}
+  .board::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg, transparent, var(--neon-cyan), transparent);}
+  .board-inner{max-width:480px;margin:0 auto;width:100%;}
+  .board-head{display:flex;justify-content:space-between;align-items:center;
+    font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:1px;}
+  .board-head .pts{color:var(--neon-yellow);font-weight:800;font-size:14px;
+    text-shadow:0 0 12px rgba(255,230,0,.7);}
+  .board-head .viewing-tag{color:var(--neon-yellow);font-size:10px;margin-left:6px;
+    text-shadow:0 0 8px rgba(255,230,0,.7);font-weight:700;}
+  .rows{display:flex;flex-direction:column;gap:3px;}
+  .brow{display:flex;gap:5px;padding:2px;border-radius:8px;transition:.18s;
+    border:1.5px solid transparent;}
+  .brow.valid{background:linear-gradient(90deg, rgba(0,240,255,.1), rgba(181,55,242,.1));
+    border-color:rgba(0,240,255,.5);
+    box-shadow:0 0 16px rgba(0,240,255,.35),inset 0 0 12px rgba(0,240,255,.08);
+    animation: rowValid 1.5s ease-in-out infinite;}
+  @keyframes rowValid{
+    0%,100%{box-shadow:0 0 16px rgba(0,240,255,.35),inset 0 0 12px rgba(0,240,255,.08);}
+    50%{box-shadow:0 0 26px rgba(0,240,255,.6),inset 0 0 16px rgba(0,240,255,.15);}
+  }
+  .pattern{flex:1 1 0;display:flex;gap:2.5px;min-width:0;}
+  .slot{flex:1 1 0;aspect-ratio:1;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;}
+  .slot:not(.empty-slot){border:1.5px dashed rgba(0,240,255,.25);background:rgba(0,240,255,.02);}
+  .slot.empty-slot{border:none;}
+  .slot .tile{width:100%;height:100%;}
+  .wall{flex:1 1 0;display:grid;grid-template-columns:repeat(5,1fr);gap:2.5px;min-width:0;}
+  .wcell{aspect-ratio:1;border-radius:5px;opacity:.15;position:relative;
+    border:1px solid rgba(255,255,255,.05);}
+  .wcell.filled{opacity:1;
+    box-shadow:inset 0 -2px 5px rgba(0,0,0,.5),inset 0 1px 3px rgba(255,255,255,.2),0 0 8px currentColor;}
+  .wcell.filled.c-azul{box-shadow:inset 0 -2px 5px rgba(0,0,0,.5),inset 0 1px 3px rgba(255,255,255,.2),0 0 10px rgba(0,168,224,.7);}
+  .wcell.filled.c-amarelo{box-shadow:inset 0 -2px 5px rgba(0,0,0,.5),inset 0 1px 3px rgba(255,255,255,.2),0 0 10px rgba(255,212,0,.7);}
+  .wcell.filled.c-vermelho{box-shadow:inset 0 -2px 5px rgba(0,0,0,.5),inset 0 1px 3px rgba(255,255,255,.2),0 0 10px rgba(255,45,149,.7);}
+  .wcell.filled.c-preto{box-shadow:inset 0 -2px 5px rgba(0,0,0,.5),inset 0 1px 3px rgba(181,55,242,.5),0 0 10px rgba(181,55,242,.7);}
+  .wcell.filled.c-branco{box-shadow:inset 0 -2px 5px rgba(0,0,0,.4),inset 0 1px 3px rgba(255,255,255,.8),0 0 10px rgba(240,233,255,.7);}
+  .floor{display:flex;align-items:center;gap:6px;margin-top:7px;}
+  .floor-label{font-size:9px;color:var(--neon-pink);text-transform:uppercase;letter-spacing:1.5px;
+    font-weight:800;text-shadow:0 0 8px rgba(255,45,149,.5);}
+  .floor-slots{display:flex;gap:3px;}
+  .fslot{width:24px;height:24px;border-radius:50%;border:1.5px dashed rgba(255,45,149,.35);
+    background:rgba(255,45,149,.03);display:flex;align-items:center;justify-content:center;
+    font-size:8px;color:var(--neon-pink);flex:0 0 auto;font-weight:800;}
+  .fslot .tile{width:100%;height:100%;}
+  .fslot.first{background:linear-gradient(135deg,#ffe600,#ff6b35);border:none;color:#3a1400;
+    font-weight:900;font-size:9px;box-shadow:0 0 12px rgba(255,230,0,.7);}
+  .hintbar{flex:0 0 auto;padding:7px 12px;text-align:center;font-size:12px;
+    color:var(--neon-cyan);min-height:34px;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:linear-gradient(180deg, rgba(10,4,32,.9), rgba(21,8,51,.9));
+    border-top:1px solid rgba(0,240,255,.15);border-bottom:1px solid rgba(0,240,255,.15);
+    text-shadow:0 0 10px rgba(0,240,255,.6);letter-spacing:.3px;}
+  .hintbar b{color:var(--neon-yellow);text-shadow:0 0 10px rgba(255,230,0,.7);}
+  .picker-overlay{position:fixed;inset:0;background:rgba(10,4,32,.85);display:none;
+    align-items:center;justify-content:center;z-index:200;padding:20px;backdrop-filter:blur(8px);}
+  .picker-overlay.show{display:flex;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .picker-panel{background:linear-gradient(180deg, rgba(35,15,77,.95), rgba(21,8,51,.98));
+    border-radius:20px;padding:20px 18px 14px;width:100%;max-width:320px;
+    border:1.5px solid rgba(0,240,255,.4);text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 60px rgba(0,240,255,.25);position:relative;}
+  .picker-panel::before{content:'';position:absolute;inset:-2px;border-radius:22px;
+    background:linear-gradient(135deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+    z-index:-1;filter:blur(15px);opacity:.5;}
+  .picker-title{font-size:11px;color:var(--neon-pink);margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:2.5px;font-weight:800;
+    text-shadow:0 0 10px rgba(255,45,149,.7);}
+  .picker-sub{font-size:11px;color:var(--text-dim);margin-bottom:16px;}
+  .picker-colors{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:14px;}
+  .picker-color{width:56px;height:56px;border-radius:50%;position:relative;cursor:pointer;
+    transition:transform .15s;
+    box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.3),0 4px 14px rgba(0,0,0,.5);}
+  .picker-color::before{content:'';position:absolute;top:12%;left:22%;width:36%;height:28%;
+    border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);
+    pointer-events:none;}
+  .picker-color:active{transform:scale(.88);}
+  .picker-color:hover{box-shadow:inset 0 -4px 8px rgba(0,0,0,.5),inset 0 3px 6px rgba(255,255,255,.3),
+      0 0 24px var(--neon-cyan),0 0 40px rgba(0,240,255,.5);}
+  .picker-color .count{position:absolute;bottom:-6px;right:-6px;
+    background:linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    color:#fff;font-size:11px;font-weight:900;border-radius:11px;padding:2px 7px;
+    border:1.5px solid rgba(255,255,255,.3);
+    box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(0,240,255,.5);}
+  .overlay{position:fixed;inset:0;background:rgba(10,4,32,.9);display:none;
+    align-items:center;justify-content:center;z-index:250;padding:18px;backdrop-filter:blur(8px);}
+  .overlay.show{display:flex;animation:fadeIn .25s ease;}
+  .overlay-panel{background:linear-gradient(180deg, rgba(35,15,77,.95), rgba(21,8,51,.98));
+    border-radius:20px;padding:20px;width:100%;max-width:380px;
+    border:1.5px solid rgba(0,240,255,.4);
+    box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 60px rgba(0,240,255,.2);
+    max-height:88vh;overflow-y:auto;position:relative;}
+  .overlay-panel::before{content:'';position:absolute;inset:-2px;border-radius:22px;
+    background:linear-gradient(135deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+    z-index:-1;filter:blur(15px);opacity:.4;}
+  .round-title{text-align:center;color:var(--neon-cyan);margin:0 0 4px;
+    font-size:18px;font-weight:900;font-family:Impact,'Arial Black',sans-serif;
+    letter-spacing:1.5px;text-shadow:0 0 15px rgba(0,240,255,.8);}
+  .round-sub{text-align:center;color:var(--text-dim);font-size:11.5px;margin:0 0 14px;}
+  .mini-player{display:flex;gap:10px;align-items:center;padding:10px;
+    background:linear-gradient(90deg, rgba(21,8,51,.9), rgba(35,15,77,.7));
+    border:1px solid rgba(0,240,255,.15);border-radius:11px;margin-bottom:7px;}
+  .mini-info{flex:1;min-width:0;}
+  .mini-name{font-size:12.5px;font-weight:700;color:var(--text-main);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.3px;}
+  .mini-pts{font-size:16px;font-weight:900;color:var(--neon-yellow);margin-top:1px;
+    text-shadow:0 0 10px rgba(255,230,0,.5);}
+  .mini-pts .delta{font-size:11px;color:var(--neon-cyan);margin-left:6px;font-weight:700;
+    text-shadow:0 0 8px rgba(0,240,255,.6);}
+  .mini-wall{display:grid;grid-template-columns:repeat(5,16px);grid-template-rows:repeat(5,16px);
+    gap:2px;flex:0 0 auto;}
+  .mini-cell{width:16px;height:16px;border-radius:3px;opacity:.18;transition:.2s;}
+  .mini-cell.filled{opacity:1;}
+  .mini-cell.new{animation:newGlow 1.1s ease-in-out 2;
+    box-shadow:0 0 0 2px var(--neon-cyan),0 0 12px rgba(0,240,255,.9);}
+  @keyframes newGlow{
+    0%,100%{transform:scale(1);box-shadow:0 0 0 2px var(--neon-cyan),0 0 12px rgba(0,240,255,.9);}
+    50%{transform:scale(1.25);box-shadow:0 0 0 3px var(--neon-cyan),0 0 20px rgba(0,240,255,1);}
+  }
+  .mini-legend{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text-dim);
+    justify-content:center;margin:4px 0 14px;}
+  .mini-legend .dot{width:10px;height:10px;border-radius:3px;
+    background:linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    box-shadow:0 0 8px rgba(0,240,255,.8);}
+  .last-round-panel{background:linear-gradient(160deg, #3a0420, #1a0210);
+    border:2px solid var(--neon-pink);border-radius:22px;padding:30px 22px;
+    width:100%;max-width:340px;text-align:center;
+    box-shadow:0 20px 60px rgba(255,45,149,.5),0 0 80px rgba(255,45,149,.35),inset 0 0 40px rgba(255,45,149,.1);
+    animation:shakeIn .6s cubic-bezier(.4,0,.2,1);position:relative;}
+  .last-round-panel::before{content:'';position:absolute;inset:-3px;border-radius:25px;
+    background:linear-gradient(135deg, var(--neon-pink), var(--neon-purple), var(--neon-cyan));
+    z-index:-1;filter:blur(20px);opacity:.7;}
+  @keyframes shakeIn{
+    0%{transform:scale(.6) rotate(-4deg);opacity:0;}
+    45%{transform:scale(1.08) rotate(2deg);opacity:1;}
+    70%{transform:scale(.97) rotate(-1deg);}
+    100%{transform:scale(1) rotate(0);}
+  }
+  .last-round-icon{font-size:64px;margin-bottom:6px;
+    animation:pulseIcon 1.2s ease-in-out infinite;
+    filter:drop-shadow(0 0 20px rgba(255,45,149,.9));}
+  @keyframes pulseIcon{
+    0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px rgba(255,45,149,.9));}
+    50%{transform:scale(1.12);filter:drop-shadow(0 0 35px rgba(255,45,149,1));}
+  }
+  .last-round-title{font-size:32px;font-weight:900;margin:0 0 12px;letter-spacing:3px;
+    font-family:Impact,'Arial Black',sans-serif;
+    background:linear-gradient(180deg, #fff 0%, #ffe600 40%, #ff2d95 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 20px rgba(255,45,149,.9));
+    animation: lastTitlePulse 1.4s ease-in-out infinite;}
+  @keyframes lastTitlePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  .last-round-msg{color:#ffb8d6;font-size:13.5px;line-height:1.6;margin:0 0 22px;}
+  #scr-over{align-items:center;justify-content:center;padding:18px;overflow-y:auto;position:relative;}
+  #scr-over .retro-sun{top:3%;opacity:.3;width:140px;height:140px;}
+  .over-inner{width:100%;max-width:400px;position:relative;z-index:2;}
+  .final-title{text-align:center;font-size:30px;margin:0 0 4px;
+    font-family:Impact,'Arial Black',sans-serif;letter-spacing:2px;
+    background:linear-gradient(180deg, #fff 0%, #ffe600 35%, #ff6b35 65%, #ff2d95 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 20px rgba(255,230,0,.7)) drop-shadow(0 0 40px rgba(255,45,149,.5));
+    animation: logoGlow 3s ease-in-out infinite;}
+  .final-sub{text-align:center;color:var(--neon-cyan);font-size:12px;margin:0 0 18px;
+    letter-spacing:3px;text-transform:uppercase;text-shadow:0 0 12px rgba(0,240,255,.7);}
+  .final-table{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
+  .final-row{display:flex;align-items:center;gap:12px;
+    background:linear-gradient(90deg, rgba(21,8,51,.85), rgba(35,15,77,.75));
+    border:1.5px solid rgba(0,240,255,.2);border-radius:13px;padding:13px 15px;
+    transition:.3s;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+  .final-row.winner{background:linear-gradient(135deg, rgba(255,45,149,.15), rgba(181,55,242,.15), rgba(0,240,255,.12));
+    border:2px solid var(--neon-yellow);padding:18px 15px;transform:scale(1.04);
+    box-shadow:0 12px 34px rgba(255,230,0,.35),0 0 40px rgba(255,45,149,.3),inset 0 0 20px rgba(255,230,0,.06);
+    animation: winnerGlow 2s ease-in-out infinite;}
+  @keyframes winnerGlow{
+    0%,100%{box-shadow:0 12px 34px rgba(255,230,0,.35),0 0 40px rgba(255,45,149,.3),inset 0 0 20px rgba(255,230,0,.06);}
+    50%{box-shadow:0 12px 44px rgba(255,230,0,.55),0 0 60px rgba(255,45,149,.5),inset 0 0 26px rgba(255,230,0,.12);}
+  }
+  .final-pos{font-size:20px;font-weight:900;width:38px;text-align:center;flex:0 0 auto;
+    color:var(--neon-cyan);text-shadow:0 0 12px rgba(0,240,255,.6);}
+  .final-row.winner .final-pos{font-size:28px;}
+  .final-info{flex:1;min-width:0;}
+  .final-name{font-size:14px;font-weight:700;color:var(--text-main);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.3px;}
+  .final-row.winner .final-name{font-size:17px;font-weight:900;color:#fff8b8;
+    text-shadow:0 0 12px rgba(255,230,0,.7);}
+  .final-bonus{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
+  .final-row.winner .final-bonus{color:#ffb8d6;}
+  .final-total{font-size:24px;font-weight:900;color:var(--neon-yellow);flex:0 0 auto;
+    text-shadow:0 0 12px rgba(255,230,0,.6);
+    font-family:Impact,'Arial Black',sans-serif;letter-spacing:1px;}
+  .final-row.winner .final-total{font-size:34px;color:#fff;
+    background:linear-gradient(180deg, #fff, #ffe600, #ff6b35);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 18px rgba(255,230,0,.9));}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg, rgba(35,15,77,.98), rgba(21,8,51,.98));
+    color:var(--neon-cyan);padding:11px 20px;border-radius:24px;font-size:12.5px;z-index:300;
+    opacity:0;transition:.3s;pointer-events:none;border:1.5px solid var(--neon-cyan);
+    box-shadow:0 0 24px rgba(0,240,255,.5),inset 0 0 20px rgba(0,240,255,.1);
+    text-shadow:0 0 8px rgba(0,240,255,.5);font-weight:600;letter-spacing:.5px;}
+  .toast.show{opacity:1;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:rgba(0,240,255,.05);}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));border-radius:3px;}
+  .bot-thinking{display:inline-block;animation:botPulse 1s ease-in-out infinite;}
+  @keyframes botPulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="scr-home" class="screen active">
+    <div class="retro-sun"></div>
+    <div class="home-inner">
+      <div class="logo-wrap">
+        <span class="logo-layer logo-glow" aria-hidden="true">Zulejos</span>
+        <span class="logo-layer logo-front">Zulejos</span>
+      </div>
+      <p class="tagline">Mobile Game</p>
+      <input id="inpName" class="inp name" placeholder="Seu nome" maxlength="12" value="">
+      <button id="btnCreate" class="btn primary big">Criar Partida Online</button>
+      <div class="join-row">
+        <input id="inpCode" class="inp" placeholder="CÓDIGO" maxlength="5" autocapitalize="characters" autocomplete="off">
+        <button id="btnJoin" class="btn">Entrar</button>
+      </div>
+      <div class="divider">OU</div>
+      <button id="btnLocal" class="btn big">Multiplayer Local</button>
+      <p class="hint" id="homeHint">Crie uma partida online e mostre o QR Code, ou jogue localmente passando o aparelho.</p>
+    </div>
+  </div>
+
+  <div id="scr-guest-join" class="screen">
+    <div class="setup-inner">
+      <h2 class="setup-title">Entrar na Sala</h2>
+      <p class="setup-sub">Sala</p>
+      <span class="join-room-code" id="joinRoomCode">-----</span>
+      <input id="joinName" class="inp name" placeholder="Digite seu nome" maxlength="12" style="text-align:center">
+      <button id="btnJoinConfirm" class="btn primary big" style="margin-top:8px">Entrar</button>
+      <button id="btnJoinCancel" class="btn ghost">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="scr-setup" class="screen">
+    <div class="setup-inner">
+      <h2 class="setup-title">Multiplayer Local</h2>
+      <p class="setup-sub">Escolha o modo de jogo</p>
+      <div class="mode-toggle">
+        <button class="btn sm active" data-play-mode="friends">Com Amigos</button>
+        <button class="btn sm" data-play-mode="bot">Contra Bot</button>
+      </div>
+      <div id="friendsSetup">
+        <div class="setup-count">
+          <button class="btn sm" data-pcount="2">2 jogadores</button>
+          <button class="btn sm" data-pcount="3">3 jogadores</button>
+          <button class="btn sm" data-pcount="4">4 jogadores</button>
+        </div>
+        <div id="setupNames"></div>
+      </div>
+      <div id="botSetup" style="display:none">
+        <input id="botHumanName" class="inp name" placeholder="Seu nome" maxlength="12" style="text-align:center">
+        <p style="color:var(--text-dim);font-size:11px;margin:14px 0 8px;letter-spacing:2px;text-transform:uppercase">Dificuldade do Bot</p>
+        <div class="setup-count">
+          <button class="btn sm" data-diff="easy">Fácil</button>
+          <button class="btn sm active" data-diff="medium">Médio</button>
+          <button class="btn sm" data-diff="hard">Difícil</button>
+        </div>
+        <p class="hint" id="diffHint" style="margin-top:6px">Médio: o bot joga bem mas às vezes erra.</p>
+      </div>
+      <button id="btnSetupStart" class="btn primary big">Começar Partida</button>
+      <button id="btnSetupBack" class="btn ghost">Voltar</button>
+    </div>
+  </div>
+
+  <div id="scr-pass" class="screen">
+    <div class="retro-sun"></div>
+    <div class="pass-inner">
+      <div class="pass-icon">📱</div>
+      <p class="pass-label">Passe o aparelho para</p>
+      <h2 class="pass-name" id="passName">—</h2>
+      <p class="pass-meta">Rodada <b id="passRound">1</b> · Pontos: <b id="passScore">0</b></p>
+      <button class="btn primary big" id="btnBeginTurn">Começar meu turno</button>
+    </div>
+  </div>
+
+  <div id="scr-lobby" class="screen">
+    <div class="retro-sun"></div>
+    <div class="lobby-inner">
+      <h2>SALA<span class="code" id="roomCode">-----</span></h2>
+      <div class="qrwrap" id="qrwrap"><img id="qrImg" alt="QR Code"></div>
+      <p class="hint" id="lobbyHint">Escaneie o QR Code ou digite o código para entrar.</p>
+      <ul class="plist" id="lobbyPlayers"></ul>
+      <button id="btnStart" class="btn primary big" disabled>Aguardando jogadores...</button>
+      <button id="btnLeave" class="btn ghost">Sair da sala</button>
+    </div>
+  </div>
+
+  <div id="scr-game" class="screen">
+    <div class="hud">
+      <span class="hud-round" id="hudRound">R1</span>
+      <div class="hud-players" id="hudPlayers"></div>
+      <button class="music-toggle playing" id="btnMusic" title="Ligar/desligar música" aria-label="Ligar/desligar música">🎵</button>
+      <button class="sound-toggle" id="btnSound" title="Ligar/desligar efeitos" aria-label="Ligar/desligar efeitos">🔊</button>
+    </div>
+    <div class="table" id="tableArea">
+      <div class="factories" id="factoriesEl"></div>
+      <div class="center-area" id="centerArea">
+        <div class="center-label">Centro da Mesa</div>
+        <div class="center-tiles" id="centerEl"></div>
+      </div>
+    </div>
+    <div class="hintbar" id="hintEl"></div>
+    <div class="board">
+      <div class="board-inner" id="boardEl"></div>
+    </div>
+  </div>
+
+  <div id="scr-over" class="screen">
+    <div class="retro-sun"></div>
+    <div class="over-inner">
+      <h2 class="final-title">🏆 PONTUAÇÃO FINAL</h2>
+      <p class="final-sub" id="finalSub">Resultado da partida</p>
+      <div id="finalTable" class="final-table"></div>
+      <button id="btnNewGame" class="btn primary big">Iniciar Outra Partida</button>
+      <button id="btnHomeFinal" class="btn big" style="margin-top:8px">Voltar à Tela Inicial</button>
+    </div>
+  </div>
+
+  <div id="pickerOverlay" class="picker-overlay">
+    <div class="picker-panel">
+      <div class="picker-title">Escolha a cor</div>
+      <div class="picker-sub" id="pickerSub"></div>
+      <div class="picker-colors" id="pickerColors"></div>
+      <button class="btn ghost" id="pickerCancel">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="roundOverlay" class="overlay">
+    <div class="overlay-panel">
+      <h3 class="round-title" id="roundTitle">Rodada concluída!</h3>
+      <p class="round-sub" id="roundSub">Azulejos movidos para a parede</p>
+      <div id="roundBoards"></div>
+      <div class="mini-legend"><div class="dot"></div><span>Novos azulejos completados</span></div>
+      <button id="btnRoundContinue" class="btn primary big">Continuar</button>
+    </div>
+  </div>
+
+  <div id="lastRoundOverlay" class="overlay">
+    <div class="last-round-panel">
+      <div class="last-round-icon">⚠️</div>
+      <h2 class="last-round-title">ÚLTIMA RODADA</h2>
+      <p class="last-round-msg" id="lastRoundMsg">Um jogador completou uma linha horizontal de 5 azulejos na parede. O jogo terminou.</p>
+      <button id="btnLastRoundOk" class="btn primary big">Ver o que aconteceu</button>
+    </div>
+  </div>
+
+  <div id="editNameOverlay" class="overlay">
+    <div class="overlay-panel" style="max-width:320px">
+      <h3 class="round-title">Editar Nome</h3>
+      <p class="round-sub">Como você quer aparecer na sala?</p>
+      <input id="editNameInput" class="inp name" maxlength="12" style="margin:12px 0;text-align:center">
+      <button id="btnEditNameConfirm" class="btn primary big">Salvar</button>
+      <button id="btnEditNameCancel" class="btn ghost">Cancelar</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+/* ============================================================
+   SOUND ENGINE — Web Audio API procedural
+   ============================================================ */
+const Sound = (() => {
+  let ctx = null;
+  let master = null;
+  let muted = false;
+
+  function init(){
+    if(ctx) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.30;
+      master.connect(ctx.destination);
+    } catch(e){ ctx = null; }
+  }
+
+  function ensure(){
+    if(!ctx) init();
+    if(!ctx) return null;
+    if(ctx.state === 'suspended'){ try { ctx.resume(); } catch(e){} }
+    return ctx;
+  }
+
+  function tone({freq=440, type='sine', dur=0.15, vol=0.4, attack=0.004,
+                 detune=0, glide=null, delay=0}){
+    const c = ensure();
+    if(!c || muted) return;
+    const t0 = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(Math.max(20, freq), t0);
+    if(glide != null) osc.frequency.exponentialRampToValueAtTime(Math.max(20, glide), t0 + dur);
+    if(detune) osc.detune.setValueAtTime(detune, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol, t0 + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + 0.02);
+    osc.connect(gain); gain.connect(master);
+    osc.start(t0); osc.stop(t0 + dur + 0.06);
+  }
+
+  return {
+    init, ensure,
+    getCtx(){ return ctx || (init(), ctx); },
+    getMaster(){ return master; },
+    isMuted(){ return muted; },
+    toggleMute(){ muted = !muted; return muted; },
+    tap(){
+      tone({freq: 880, type:'triangle', dur:0.09, vol:0.32, glide:660});
+      tone({freq: 1760, type:'sine', dur:0.05, vol:0.14, delay:0.02});
+    },
+    pick(){
+      tone({freq: 660, type:'sine', dur:0.09, vol:0.28});
+      tone({freq: 990, type:'sine', dur:0.14, vol:0.26, delay:0.06});
+    },
+    place(){
+      tone({freq: 523.25, type:'triangle', dur:0.18, vol:0.34});
+      tone({freq: 659.25, type:'triangle', dur:0.22, vol:0.26, delay:0.04});
+      tone({freq: 783.99, type:'sine',     dur:0.26, vol:0.20, delay:0.08});
+    },
+    floor(){
+      tone({freq: 220, type:'sawtooth', dur:0.12, vol:0.24, glide:130});
+      tone({freq: 110, type:'sine',     dur:0.20, vol:0.28});
+    },
+    error(){
+      tone({freq: 160, type:'square', dur:0.12, vol:0.16});
+      tone({freq: 120, type:'square', dur:0.14, vol:0.13, delay:0.02});
+    }
+  };
+})();
+
+/* ============================================================
+   MUSIC ENGINE — loop synth-pop (Freestyle inspired)
+   CORREÇÃO 1: start() aguarda o AudioContext ficar 'running'
+   ============================================================ */
+const Music = (() => {
+  let ctx = null;
+  let master = null;
+  let noiseBuffer = null;
+  let isPlaying = false;
+  let muted = false;
+  let timerId = null;
+  let nextNoteTime = 0;
+  let currentStep = 0;
+
+  const BPM = 126;
+  const SEC_PER_BEAT = 60 / BPM;
+  const SEC_PER_STEP = SEC_PER_BEAT / 2;
+  const STEPS_PER_BAR = 8;
+  const TOTAL_BARS = 4;
+  const TOTAL_STEPS = STEPS_PER_BAR * TOTAL_BARS;
+  const LOOKAHEAD_MS = 25;
+  const SCHEDULE_AHEAD = 0.12;
+
+  const CHORDS = [
+    { root: 110.00, notes: [220.00, 261.63, 329.63] },
+    { root: 87.31,  notes: [174.61, 220.00, 261.63] },
+    { root: 130.81, notes: [261.63, 329.63, 392.00] },
+    { root: 98.00,  notes: [196.00, 246.94, 293.66] }
+  ];
+
+  function getCtx(){
+    if(!ctx){
+      ctx = Sound.getCtx();
+      if(!ctx) return null;
+      master = ctx.createGain();
+      master.gain.value = muted ? 0 : 0.085;
+      master.connect(ctx.destination);
+    }
+    return ctx;
+  }
+
+  function getNoise(){
+    if(noiseBuffer) return noiseBuffer;
+    const size = ctx.sampleRate * 0.5;
+    const buf = ctx.createBuffer(1, size, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<size;i++) data[i] = Math.random()*2 - 1;
+    noiseBuffer = buf;
+    return noiseBuffer;
+  }
+
+  function kick(t){
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(38, t + 0.09);
+    gain.gain.setValueAtTime(0.85, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    osc.connect(gain); gain.connect(master);
+    osc.start(t); osc.stop(t + 0.24);
+  }
+
+  function snare(t){
+    const osc = ctx.createOscillator();
+    const og = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.08);
+    og.gain.setValueAtTime(0.20, t);
+    og.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    osc.connect(og); og.connect(master);
+    osc.start(t); osc.stop(t + 0.15);
+    const noise = ctx.createBufferSource();
+    noise.buffer = getNoise();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1400;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.28, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    noise.connect(hp); hp.connect(ng); ng.connect(master);
+    noise.start(t); noise.stop(t + 0.16);
+  }
+
+  function hihat(t, accent){
+    const noise = ctx.createBufferSource();
+    noise.buffer = getNoise();
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 8000;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(accent ? 0.11 : 0.06, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+    noise.connect(hp); hp.connect(gain); gain.connect(master);
+    noise.start(t); noise.stop(t + 0.06);
+  }
+
+  function bass(t, freq, dur){
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc2.type = 'square';
+    osc.frequency.value = freq;
+    osc2.frequency.value = freq;
+    osc2.detune.value = -7;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 900;
+    lp.Q.value = 3.5;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.34, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(lp); osc2.connect(lp); lp.connect(gain); gain.connect(master);
+    osc.start(t); osc.stop(t + dur + 0.03);
+    osc2.start(t); osc2.stop(t + dur + 0.03);
+  }
+
+  function lead(t, freq, dur){
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(4000, t);
+    lp.frequency.exponentialRampToValueAtTime(1800, t + dur);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.10, t + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(lp); lp.connect(gain); gain.connect(master);
+    osc.start(t); osc.stop(t + dur + 0.03);
+  }
+
+  function chordStab(t, freqs, dur){
+    freqs.forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = f;
+      osc.detune.value = (i - 1) * 6;
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(2800, t);
+      lp.frequency.exponentialRampToValueAtTime(900, t + dur);
+      lp.Q.value = 5;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.055, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(lp); lp.connect(gain); gain.connect(master);
+      osc.start(t); osc.stop(t + dur + 0.03);
+    });
+  }
+
+  function scheduleStep(step, time){
+    const bar = Math.floor(step / STEPS_PER_BAR) % TOTAL_BARS;
+    const sub = step % STEPS_PER_BAR;
+    const chord = CHORDS[bar];
+    if(sub % 2 === 0) kick(time);
+    if(sub === 2 || sub === 6) snare(time);
+    hihat(time, sub % 2 === 1);
+    const bassHits = [1,0,1,1,0,1,0,1];
+    if(bassHits[sub]) bass(time, chord.root, 0.17);
+    if(sub === 0 || sub === 4) chordStab(time, chord.notes, 0.22);
+    if(sub === 1) lead(time, chord.notes[chord.notes.length-1] * 2, 0.13);
+    if(sub === 3) lead(time, chord.notes[1] * 2, 0.13);
+    if(sub === 5) lead(time, chord.notes[chord.notes.length-1] * 2, 0.13);
+    if(sub === 7) lead(time, chord.notes[0] * 4, 0.13);
+  }
+
+  function scheduler(){
+    if(!ctx || !isPlaying) return;
+    while(nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD){
+      scheduleStep(currentStep, nextNoteTime);
+      nextNoteTime += SEC_PER_STEP;
+      currentStep = (currentStep + 1) % TOTAL_STEPS;
+    }
+  }
+
+  return {
+    // CORREÇÃO 1: só agenda as notas depois que o context está realmente 'running'
+    start(){
+      if(isPlaying) return;
+      const c = getCtx();
+      if(!c) return;
+
+      const begin = () => {
+        if(isPlaying) return;
+        if(c.state !== 'running') return; // ainda não está pronto; tenta de novo no próximo unlock
+        isPlaying = true;
+        currentStep = 0;
+        nextNoteTime = c.currentTime + 0.08;
+        if(timerId){ clearInterval(timerId); timerId = null; }
+        timerId = setInterval(scheduler, LOOKAHEAD_MS);
+      };
+
+      if(c.state === 'suspended'){
+        const p = c.resume();
+        if(p && typeof p.then === 'function'){
+          p.then(begin).catch(begin);
+        } else {
+          begin();
+        }
+      } else if(c.state === 'running'){
+        begin();
+      }
+    },
+    stop(){
+      isPlaying = false;
+      if(timerId){ clearInterval(timerId); timerId = null; }
+    },
+    restart(){
+      this.stop();
+      this.start();
+    },
+    isPlaying(){ return isPlaying; },
+    isMuted(){ return muted; },
+    setMuted(v){
+      muted = v;
+      if(master && ctx){
+        const t = ctx.currentTime;
+        master.gain.cancelScheduledValues(t);
+        master.gain.setValueAtTime(master.gain.value, t);
+        master.gain.linearRampToValueAtTime(v ? 0 : 0.085, t + 0.25);
+      }
+    },
+    toggleMute(){ this.setMuted(!muted); return muted; }
+  };
+})();
+
+/* ============================================================
+   CONSTANTES
+   ============================================================ */
+const COLORS = ['azul','amarelo','vermelho','preto','branco'];
+const FLOOR_PTS = [-1,-1,-2,-2,-2,-3,-3];
+const WALL_AT = (r,c) => COLORS[(c - r + 5) % 5];
+
+const App = {
+  mode: null, myId: null, room: null, peer: null,
+  conns: new Map(), conn: null, lobby: null,
+  state: null, sel: null, picker: null, setupCount: 2,
+  viewIdx: null, botDifficulty: 'medium', pendingRoom: null
+};
+const LocalFlags = { lastRoundAlertShown:false, finalSummaryShown:false };
+function resetLocalFlags(){ LocalFlags.lastRoundAlertShown=false; LocalFlags.finalSummaryShown=false; }
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function genCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r=''; for(let i=0;i<5;i++) r+=s[Math.floor(Math.random()*s.length)]; return r; }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function $(id){ return document.getElementById(id); }
+let toastTimer=null;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id)); }
+
+function makeBag(){ const b=[]; for(const c of COLORS) for(let i=0;i<20;i++) b.push(c); return b; }
+function drawTiles(st,n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    if(st.bag.length===0){ if(st.box.length===0) break; st.bag=shuffle(st.box.slice()); st.box.length=0; }
+    out.push(st.bag.pop());
+  }
+  return out;
+}
+function newGame(defs){
+  const st = {
+    players: defs.map(d=>({ id:d.id, name:d.name,
+      pattern:[[],[],[],[],[]],
+      wall:Array.from({length:5},()=>Array(5).fill(null)),
+      floor:[], score:0, bonus:null })),
+    bag:shuffle(makeBag()), box:[], factories:[], center:[],
+    firstMarkerInCenter:true, current:0, firstPlayerNext:0,
+    round:1, phase:'draft', newWallCells:[], lastRoundDelta:[]
+  };
+  const n = defs.length;
+  const fc = n<=2 ? 5 : (n===3 ? 7 : 9);
+  st.factories = Array.from({length:fc},()=>[]);
+  for(const f of st.factories) f.push(...drawTiles(st,4));
+  return st;
+}
+function validRows(st,pi,color){
+  const p=st.players[pi]; const ci=COLORS.indexOf(color); const res=[];
+  for(let r=0;r<5;r++){
+    const row=p.pattern[r]; const cap=r+1;
+    if(row.length>=cap) continue;
+    if(row.length>0 && row[0]!==color) continue;
+    const col=(ci+r)%5;
+    if(p.wall[r][col]) continue;
+    res.push(r);
+  }
+  return res;
+}
+function addToFloor(st,p,tile){ if(p.floor.length<7) p.floor.push(tile); else st.box.push(tile); }
+function applyMove(st,pi,src,color,rowIdx){
+  const p=st.players[pi]; let taken=[];
+  if(src.type==='factory'){
+    const f=st.factories[src.idx];
+    taken=f.filter(c=>c===color);
+    const rest=f.filter(c=>c!==color);
+    st.factories[src.idx]=[]; st.center.push(...rest);
+  } else {
+    taken=st.center.filter(c=>c===color);
+    st.center=st.center.filter(c=>c!==color);
+    if(st.firstMarkerInCenter){ st.firstMarkerInCenter=false; st.firstPlayerNext=pi; p.floor.push('first'); }
+  }
+  if(rowIdx>=0){
+    const cap=rowIdx+1;
+    const space=cap-p.pattern[rowIdx].length;
+    const placed=Math.min(space,taken.length);
+    for(let i=0;i<placed;i++) p.pattern[rowIdx].push(color);
+    for(let i=placed;i<taken.length;i++) addToFloor(st,p,taken[i]);
+  } else {
+    for(const t of taken) addToFloor(st,p,t);
+  }
+  st.current=(pi+1)%st.players.length;
+  if(checkRoundEnd(st)) endRound(st);
+}
+function checkRoundEnd(st){ return st.factories.every(f=>f.length===0) && st.center.length===0; }
+function wallScore(wall,r,c){
+  let h=1,v=1;
+  for(let x=c-1;x>=0 && wall[r][x];x--) h++;
+  for(let x=c+1;x<5 && wall[r][x];x++) h++;
+  for(let y=r-1;y>=0 && wall[y][c];y--) v++;
+  for(let y=r+1;y<5 && wall[y][c];y++) v++;
+  let s=0;
+  if(h>1) s+=h;
+  if(v>1) s+=v;
+  if(h===1 && v===1) s+=1;
+  return s;
+}
+function endRound(st){
+  st.newWallCells=[];
+  st.lastRoundDelta=st.players.map(p=>({id:p.id,delta:0}));
+  for(const p of st.players){
+    const scoreBefore=p.score;
+    for(let r=0;r<5;r++){
+      const row=p.pattern[r];
+      if(row.length===r+1){
+        const color=row[0];
+        const col=(COLORS.indexOf(color)+r)%5;
+        p.wall[r][col]=color;
+        st.newWallCells.push({playerId:p.id,r,c:col});
+        p.score += wallScore(p.wall,r,col);
+        for(let i=1;i<row.length;i++) st.box.push(row[i]);
+        p.pattern[r]=[];
+      }
+      // Fileira incompleta: mantém os azulejos
+    }
+    let pen=0;
+    p.floor.forEach((item,i)=>{ pen+=FLOOR_PTS[Math.min(i,6)]; });
+    p.score=Math.max(0,p.score+pen);
+    p.floor.forEach(item=>{ if(item!=='first') st.box.push(item); });
+    p.floor=[];
+    const entry=st.lastRoundDelta.find(x=>x.id===p.id);
+    if(entry) entry.delta=p.score-scoreBefore;
+  }
+  const ended=st.players.some(p=>p.wall.some(row=>row.every(c=>c)));
+  if(ended) finishGame(st);
+  else {
+    st.round++;
+    st.current=st.firstPlayerNext;
+    st.center=[];
+    for(const f of st.factories){ f.length=0; f.push(...drawTiles(st,4)); }
+    st.firstMarkerInCenter=true;
+  }
+}
+function finishGame(st){
+  st.phase='over';
+  for(const p of st.players){
+    let rows=0,cols=0; const counts={};
+    for(let r=0;r<5;r++){
+      if(p.wall[r].every(c=>c)) rows++;
+      for(let c=0;c<5;c++){ const col=p.wall[r][c]; if(col) counts[col]=(counts[col]||0)+1; }
+    }
+    for(let c=0;c<5;c++){ let full=true; for(let r=0;r<5;r++) if(!p.wall[r][c]) full=false; if(full) cols++; }
+    let colorBonus=0;
+    for(const k in counts) if(counts[k]===5) colorBonus++;
+    p.bonus={rows,cols,colors:colorBonus,points:rows*2+cols*7+colorBonus*10};
+    p.score += p.bonus.points;
+  }
+}
+
+function isBotPlayer(idx){ return App.mode === 'bot' && idx === 1; }
+function scheduleBotMove(){
+  const st = App.state;
+  if(!st || st.phase !== 'draft') return;
+  if(!isBotPlayer(st.current)) return;
+  const delay = 800 + Math.random() * 700;
+  setTimeout(()=>{
+    if(!App.state || App.state.phase !== 'draft') return;
+    if(!isBotPlayer(App.state.current)) return;
+    const botIdx = App.state.current;
+    const move = botChooseMove(App.state, botIdx, App.botDifficulty);
+    if(!move) return;
+    applyMove(App.state, botIdx, move.src, move.color, move.row);
+    handleEndOfTurnUI();
+  }, delay);
+}
+function botChooseMove(st, botIdx, difficulty){
+  const moves = [];
+  const sources = [];
+  st.factories.forEach((f, i)=>{ if(f.length > 0) sources.push({type:'factory', idx:i, tiles:f}); });
+  if(st.center.length > 0 || st.firstMarkerInCenter) sources.push({type:'center', tiles:st.center});
+  for(const src of sources){
+    const colorSet = new Set(src.tiles);
+    for(const color of colorSet){
+      const count = src.tiles.filter(c=>c===color).length;
+      const rows = validRows(st, botIdx, color);
+      if(rows.length > 0){ for(const r of rows) moves.push({src:{type:src.type, idx:src.idx}, color, row:r, count}); }
+      else { moves.push({src:{type:src.type, idx:src.idx}, color, row:-1, count}); }
+    }
+  }
+  if(moves.length === 0) return null;
+  if(difficulty === 'easy') return moves[Math.floor(Math.random()*moves.length)];
+  moves.forEach(m => { m.score = evaluateMove(st, botIdx, m); });
+  moves.sort((a,b)=>b.score-a.score);
+  if(difficulty === 'medium'){ const top = moves.slice(0, Math.min(3, moves.length)); return top[Math.floor(Math.random()*top.length)]; }
+  return moves[0];
+}
+function evaluateMove(st, botIdx, move){
+  const p = st.players[botIdx];
+  let score = 0;
+  if(move.row >= 0){
+    const cap = move.row + 1;
+    const space = cap - p.pattern[move.row].length;
+    const placed = Math.min(space, move.count);
+    const overflow = move.count - placed;
+    score += placed * 3;
+    if(p.pattern[move.row].length + placed === cap){
+      score += 20;
+      const col = (COLORS.indexOf(move.color) + move.row) % 5;
+      score += wallScore(p.wall, move.row, col) * 3;
+    }
+    score -= overflow * 5;
+    score += move.row * 2;
+  } else { score -= move.count * 4; if(move.count <= 1) score += 3; }
+  if(st.firstMarkerInCenter && move.src.type === 'center') score += 1;
+  return score;
+}
+
+function hostCreateRoom(){
+  App.mode='host';
+  const hostName=($('inpName').value.trim())||'Jogador 1';
+  App.myId='h_'+Math.random().toString(36).slice(2,8);
+  App.room=genCode();
+  App.lobby={players:[{id:App.myId,name:hostName}]};
+  show('scr-lobby'); updateLobbyUI();
+  const peer=new Peer('azulbr-'+App.room,{debug:0});
+  App.peer=peer;
+  peer.on('open',()=>{});
+  peer.on('error',(err)=>{
+    if(err.type==='unavailable-id'){ App.room=genCode(); peer.destroy(); hostCreateRoom(); }
+    else { $('lobbyHint').textContent='Erro de conexão. Verifique sua internet.'; }
+  });
+  peer.on('connection',(conn)=>{
+    conn.on('data',(d)=>hostData(conn,d));
+    conn.on('close',()=>{
+      if(!App.state){
+        const entry=[...App.conns.entries()].find(([k,v])=>v===conn);
+        if(entry){
+          App.conns.delete(entry[0]);
+          App.lobby.players=App.lobby.players.filter(p=>p.id!==entry[0]);
+          updateLobbyUI(); broadcastLobby();
+        }
+      }
+    });
+  });
+}
+function hostData(conn,d){
+  if(d.type==='hello'){
+    if(App.lobby.players.length>=4){ conn.send({type:'error',msg:'Sala cheia (máx. 4 jogadores).'}); return; }
+    const id=d.id;
+    App.conns.set(id,conn);
+    App.lobby.players.push({id,name:d.name||('Jogador '+(App.lobby.players.length+1))});
+    conn.send({type:'lobby',lobby:App.lobby,room:App.room,you:id});
+    broadcastLobby(); updateLobbyUI();
+  }
+  else if(d.type==='nameUpdate'){
+    const p=App.lobby.players.find(x=>x.id===d.id);
+    if(p && d.name){ p.name=d.name; updateLobbyUI(); broadcastLobby(); }
+  }
+  else if(d.type==='move'){
+    if(!App.state || App.state.phase!=='draft') return;
+    const idx=App.state.players.findIndex(p=>p.id===d.id);
+    if(idx<0 || App.state.current!==idx) return;
+    const rows=validRows(App.state,idx,d.color);
+    if(d.row>=0 && !rows.includes(d.row)) return;
+    if(d.row<0 && rows.length>0) return;
+    applyMove(App.state,idx,d.src,d.color,d.row);
+    afterMove();
+  }
+}
+function broadcastLobby(){ const msg={type:'lobby',lobby:App.lobby,room:App.room}; App.conns.forEach(c=>{try{c.send(msg);}catch(e){}}); }
+function broadcastState(){ const msg={type:'state',state:App.state}; App.conns.forEach(c=>{try{c.send(msg);}catch(e){}}); }
+function guestJoin(code){
+  App.mode='guest';
+  App.myId='g_'+Math.random().toString(36).slice(2,8);
+  const guestName=($('inpName').value.trim())||'Jogador';
+  const peer=new Peer({debug:0});
+  App.peer=peer;
+  peer.on('open',()=>{
+    const conn=peer.connect('azulbr-'+code,{reliable:true});
+    App.conn=conn;
+    conn.on('open',()=>{ conn.send({type:'hello',id:App.myId,name:guestName}); });
+    conn.on('data',guestData);
+    conn.on('error',()=>{ $('homeHint').textContent='Erro na conexão.'; });
+  });
+  peer.on('error',()=>{ $('homeHint').textContent='Não foi possível conectar. Verifique o código e a internet.'; show('scr-home'); });
+  setTimeout(()=>{ if(!App.lobby && !App.state && App.mode==='guest'){ $('homeHint').textContent='Sala não encontrada. Tente novamente.'; show('scr-home'); } },12000);
+}
+function guestData(d){
+  if(d.type==='lobby'){ App.lobby=d.lobby; App.room=d.room; show('scr-lobby'); updateLobbyUI(); }
+  else if(d.type==='state'){
+    const prev=App.state;
+    App.state=d.state; App.sel=null;
+    if(prev && prev.phase==='over' && d.state.phase==='draft') resetLocalFlags();
+    handleEndOfTurnUI();
+  } else if(d.type==='error'){ toast(d.msg); }
+}
+
+function updateLobbyUI(){
+  $('roomCode').textContent=App.room||'-----';
+  const qr=$('qrImg'); const wrap=$('qrwrap');
+  if(App.mode==='host'){
+    const base=location.origin+location.pathname;
+    const url=base+'?room='+App.room;
+    if(location.protocol==='file:'){
+      wrap.style.display='none';
+      $('lobbyHint').innerHTML='Você abriu o arquivo localmente — o QR Code não funcionará.<br>Hospede o arquivo online ou peça para os outros digitarem o código.';
+    } else {
+      wrap.style.display='inline-block';
+      qr.onerror=()=>{ wrap.style.display='none'; };
+      qr.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(url);
+      $('lobbyHint').textContent='Escaneie o QR Code ou digite o código da sala.';
+    }
+  } else { wrap.style.display='none'; $('lobbyHint').textContent='Aguardando o anfitrião iniciar a partida...'; }
+  $('lobbyPlayers').innerHTML=App.lobby.players.map((p,i)=>{
+    const isMe=p.id===App.myId;
+    return `<li ${isMe?'class="editable" data-edit-me="1"':''}>
+      <span class="num">${i+1}</span>
+      <span style="flex:1">${esc(p.name)}</span>
+      ${isMe?'<span class="edit-tag">✏️ editar</span>':''}
+    </li>`;
+  }).join('');
+  const btn=$('btnStart');
+  if(App.mode==='host'){
+    btn.style.display='block';
+    const n=App.lobby.players.length;
+    btn.disabled=n<2;
+    btn.textContent=n<2 ? `Aguardando... (${n}/2 mínimo)` : `Iniciar Partida (${n})`;
+  } else { btn.style.display='none'; }
+}
+function startMultiplayerGame(){
+  if(App.mode!=='host') return;
+  if(App.lobby.players.length<2){ toast('São necessários pelo menos 2 jogadores.'); return; }
+  resetLocalFlags();
+  App.state=newGame(App.lobby.players);
+  App.sel=null; App.viewIdx=null;
+  broadcastState();
+  show('scr-game'); renderGame();
+}
+
+let setupPlayMode='friends';
+let setupDifficulty='medium';
+function renderSetupNames(){
+  let html='';
+  for(let i=0;i<App.setupCount;i++) html+=`<input class="inp name" id="setupName${i}" placeholder="Jogador ${i+1}" maxlength="12">`;
+  $('setupNames').innerHTML=html;
+  document.querySelectorAll('[data-pcount]').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.dataset.pcount,10)===App.setupCount);
+  });
+}
+function openLocalSetup(){
+  App.setupCount=2;
+  setupPlayMode='friends'; setupDifficulty='medium';
+  document.querySelectorAll('[data-play-mode]').forEach(x=>x.classList.toggle('active', x.dataset.playMode==='friends'));
+  document.querySelectorAll('[data-diff]').forEach(x=>x.classList.toggle('active', x.dataset.diff==='medium'));
+  $('friendsSetup').style.display='block';
+  $('botSetup').style.display='none';
+  renderSetupNames();
+  show('scr-setup');
+}
+function startLocalGame(n,names){
+  App.mode='local'; App.myId=null; resetLocalFlags();
+  const defs=[];
+  for(let i=0;i<n;i++) defs.push({id:'L'+i,name:names[i]||('Jogador '+(i+1))});
+  App.state=newGame(defs); App.sel=null; App.viewIdx=null;
+  show('scr-game'); renderGame();
+}
+function startBotGame(humanName,difficulty){
+  App.mode='bot'; App.myId=null; resetLocalFlags();
+  App.botDifficulty=difficulty;
+  const defs=[{ id:'H0', name: humanName||'Você' },{ id:'B0', name: '🤖 Bot' }];
+  App.state=newGame(defs); App.sel=null; App.viewIdx=null;
+  show('scr-game'); renderGame();
+}
+function showPassScreen(){
+  closePicker();
+  const st=App.state; const p=st.players[st.current];
+  $('passName').textContent=p.name;
+  $('passRound').textContent=st.round;
+  $('passScore').textContent=p.score;
+  show('scr-pass');
+}
+
+function myIndex(){
+  if(!App.state) return -1;
+  if(App.mode==='local' || App.mode==='bot') return App.state.current;
+  return App.state.players.findIndex(p=>p.id===App.myId);
+}
+function getViewIdx(){
+  const st=App.state;
+  if(!st) return -1;
+  if(App.viewIdx !== null && App.viewIdx !== undefined && App.viewIdx >= 0 && App.viewIdx < st.players.length) return App.viewIdx;
+  return myIndex();
+}
+function ensureViewingSelf(){
+  const pi=myIndex();
+  if(getViewIdx() !== pi){ App.viewIdx = pi; renderGame(); }
+}
+
+function tileHTML(color,attrs){
+  let extra='';
+  if(attrs){
+    extra=` data-src="${attrs.src}"`;
+    if(attrs.idx!==undefined) extra+=` data-idx="${attrs.idx}"`;
+    extra+=` data-color="${color}"`;
+  }
+  let cls='tile c-'+color;
+  if(attrs && App.sel){
+    if(App.sel.src.type===attrs.src && App.sel.src.idx===attrs.idx && App.sel.color===color) cls+=' selected';
+    else cls+=' dim';
+  }
+  if(attrs && attrs.extra) cls+=' '+attrs.extra;
+  return `<div class="${cls}"${extra}></div>`;
+}
+function renderGame(){
+  const st=App.state; if(!st) return;
+  const pi=myIndex(); const vi=getViewIdx();
+  const me=st.players[pi]; if(!me) return;
+
+  $('hudRound').textContent='R'+st.round;
+  $('hudPlayers').innerHTML=st.players.map((p,i)=>{
+    let cls='pchip';
+    if(i===st.current) cls+=' active';
+    if(i===pi) cls+=' me';
+    if(i===vi) cls+=' viewing';
+    if(isBotPlayer(i)) cls+=' bot';
+    return `<div class="${cls}" data-view-player="${i}"><span class="pname">${esc(p.name)}</span><span class="pscore">${p.score}</span></div>`;
+  }).join('');
+
+  $('factoriesEl').innerHTML=st.factories.map((f,i)=>{
+    if(f.length===0) return `<div class="factory empty" data-factory="${i}"></div>`;
+    const active=App.sel && App.sel.src.type==='factory' && App.sel.src.idx===i;
+    const tiles=f.map(c=>tileHTML(c,{src:'f',idx:i})).join('');
+    return `<div class="factory${active?' src-active':''}" data-factory="${i}">${tiles}</div>`;
+  }).join('');
+
+  const sorted=[...st.center].sort((a,b)=>COLORS.indexOf(a)-COLORS.indexOf(b));
+  let centerHTML='';
+  if(st.firstMarkerInCenter) centerHTML+=`<div class="firstmark">1º</div>`;
+  centerHTML+=sorted.map(c=>tileHTML(c,{src:'c',extra:'ctile'})).join('');
+  $('centerEl').innerHTML=centerHTML||'<span style="color:#5d4a8a;font-size:11px">— vazio —</span>';
+
+  const centerArea=$('centerArea');
+  const centerActive=App.sel && App.sel.src.type==='center';
+  centerArea.classList.toggle('src-active',!!centerActive);
+  centerArea.classList.toggle('empty-src',st.center.length===0 && !st.firstMarkerInCenter);
+
+  renderBoard();
+
+  const hint=$('hintEl');
+  if(st.phase==='over'){ hint.textContent='Fim de jogo!'; return; }
+  if(st.current !== pi){
+    hint.innerHTML=`Vez de <b>${esc(st.players[st.current].name)}</b>${isBotPlayer(st.current)?' <span class="bot-thinking">🤖 pensando...</span>':''}`;
+    return;
+  }
+  if(vi !== pi){
+    hint.innerHTML=`Você está vendo <b>${esc(st.players[vi].name)}</b>. Toque em <b>você</b> para jogar.`;
+    return;
+  }
+  if(!App.sel){ hint.textContent='Toque em uma fábrica ou no centro'; }
+  else if(App.sel.rows.length===0){
+    hint.innerHTML=`Sem fileira. <button class="btn sm" id="btnFloor" style="background:linear-gradient(135deg,#c40073,#ff2d95);color:#fff;padding:6px 12px;font-size:12px;border-color:rgba(255,255,255,.3)">Descartar no chão</button>`;
+  } else { hint.textContent='Toque na fileira de destino'; }
+}
+function renderBoard(){
+  const st=App.state;
+  const pi=myIndex();
+  const vi=getViewIdx();
+  const p=st.players[vi];
+  const viewingSelf = vi === pi;
+
+  let html=`<div class="board-head">
+    <span>${viewingSelf ? esc(p.name) : '👁️ '+esc(p.name)}${viewingSelf?'':'<span class="viewing-tag">(visualizando)</span>'}</span>
+    <span class="pts">${p.score} pts</span>
+  </div>`;
+  html+='<div class="rows">';
+  for(let r=0;r<5;r++){
+    const cap=r+1; const row=p.pattern[r];
+    const valid = viewingSelf && App.sel && App.sel.rows && App.sel.rows.includes(r);
+    html+=`<div class="brow${valid?' valid':''}" data-row="${r}">`;
+    html+='<div class="pattern">';
+    for(let i=0;i<5;i++){
+      if(i<cap){ const c=row[i]; html+=`<div class="slot">${c?`<div class="tile c-${c}"></div>`:''}</div>`; }
+      else { html+='<div class="slot empty-slot"></div>'; }
+    }
+    html+='</div>';
+    html+='<div class="wall">';
+    for(let c=0;c<5;c++){
+      const wc=p.wall[r][c]; const base=WALL_AT(r,c);
+      if(wc) html+=`<div class="wcell filled c-${wc}"></div>`;
+      else html+=`<div class="wcell c-${base}"></div>`;
+    }
+    html+='</div></div>';
+  }
+  html+='</div>';
+  html+='<div class="floor"><div class="floor-label">Chão</div><div class="floor-slots">';
+  for(let i=0;i<7;i++){
+    const item=p.floor[i];
+    if(item==='first') html+=`<div class="fslot first">1º</div>`;
+    else if(item) html+=`<div class="fslot"><div class="tile c-${item}"></div></div>`;
+    else html+=`<div class="fslot">${FLOOR_PTS[i]}</div>`;
+  }
+  html+='</div></div>';
+  $('boardEl').innerHTML=html;
+}
+
+function handleEndOfTurnUI(){
+  const st=App.state; if(!st) return;
+  if(st.phase==='over'){
+    if(!LocalFlags.lastRoundAlertShown){ LocalFlags.lastRoundAlertShown=true; showLastRoundAlert(); return; }
+    if(!LocalFlags.finalSummaryShown){ LocalFlags.finalSummaryShown=true; show('scr-game'); renderGame(); showRoundSummary(true); return; }
+    showOver(); return;
+  }
+  if(st.newWallCells && st.newWallCells.length>0){ show('scr-game'); renderGame(); showRoundSummary(false); return; }
+  show('scr-game'); renderGame();
+  if(isBotPlayer(st.current)){ scheduleBotMove(); return; }
+  if(App.mode==='local') showPassScreen();
+}
+function showLastRoundAlert(){
+  const st=App.state;
+  const winner=st.players.find(p=>st.newWallCells.some(x=>x.playerId===p.id));
+  $('lastRoundMsg').innerHTML=winner
+    ? `<b style="color:#ffb8d6;text-shadow:0 0 12px rgba(255,45,149,.8)">${esc(winner.name)}</b> completou uma linha horizontal de 5 azulejos na parede. O jogo terminou!`
+    : 'Alguém completou uma linha horizontal de 5 azulejos na parede. O jogo terminou!';
+  $('lastRoundOverlay').classList.add('show');
+}
+function afterMove(){ broadcastState(); handleEndOfTurnUI(); }
+
+function showRoundSummary(isFinal){
+  const st=App.state;
+  const finishedRound=st.phase==='over'?st.round:st.round-1;
+  $('roundTitle').textContent=isFinal?`🏁 Rodada ${finishedRound} — Fim`:`Rodada ${finishedRound} concluída`;
+  $('roundSub').textContent=st.newWallCells.length===0
+    ? 'Nenhum azulejo foi completado nesta rodada'
+    : `${st.newWallCells.length} azulejo${st.newWallCells.length>1?'s':''} movido${st.newWallCells.length>1?'s':''} para a parede`;
+  let html='';
+  st.players.forEach((p)=>{
+    const delta=st.lastRoundDelta.find(x=>x.id===p.id)?.delta||0;
+    const deltaStr=delta!==0?`<span class="delta">(${delta>0?'+':''}${delta})</span>`:'';
+    html+=`<div class="mini-player"><div class="mini-info"><div class="mini-name">${esc(p.name)}</div><div class="mini-pts">${p.score} pts${deltaStr}</div></div><div class="mini-wall">`;
+    for(let r=0;r<5;r++){
+      for(let c=0;c<5;c++){
+        const wc=p.wall[r][c]; const base=WALL_AT(r,c);
+        const isNew=st.newWallCells.some(x=>x.playerId===p.id && x.r===r && x.c===c);
+        if(wc) html+=`<div class="mini-cell c-${wc} filled${isNew?' new':''}"></div>`;
+        else html+=`<div class="mini-cell c-${base}"></div>`;
+      }
+    }
+    html+='</div></div>';
+  });
+  $('roundBoards').innerHTML=html;
+  $('btnRoundContinue').textContent=isFinal?'Ver pontuação final':'Continuar';
+  $('roundOverlay').classList.add('show');
+}
+
+function showOver(){
+  const st=App.state;
+  const rank=[...st.players].sort((a,b)=>{
+    if(b.score!==a.score) return b.score-a.score;
+    return (b.bonus?.rows||0)-(a.bonus?.rows||0);
+  });
+  $('finalSub').textContent=rank.length>1?`Vitória de ${rank[0].name}`:'Resultado da partida';
+  const medals=['🥇','🥈','🥉'];
+  $('finalTable').innerHTML=rank.map((p,i)=>{
+    const b=p.bonus||{rows:0,cols:0,colors:0,points:0};
+    const baseScore=p.score-b.points;
+    const isWinner=i===0;
+    const medal=i<3?medals[i]:(i+1)+'º';
+    return `<div class="final-row${isWinner?' winner':''}">
+        <div class="final-pos">${medal}</div>
+        <div class="final-info">
+          <div class="final-name">${esc(p.name)}</div>
+          <div class="final-bonus">Base ${baseScore} · +${b.rows*2} linhas · +${b.cols*7} colunas · +${b.colors*10} cores</div>
+        </div>
+        <div class="final-total">${p.score}</div>
+      </div>`;
+  }).join('');
+  show('scr-over');
+}
+
+function openColorPicker(src){
+  const st=App.state;
+  if(!st || st.phase!=='draft') return;
+  const pi=myIndex();
+  if(st.current!==pi){ toast('Não é a sua vez'); Sound.error(); return; }
+  if(getViewIdx()!==pi) ensureViewingSelf();
+  let pool;
+  if(src.type==='factory') pool=st.factories[src.idx];
+  else pool=st.center;
+  if(!pool || pool.length===0){ toast('Fonte vazia'); Sound.error(); return; }
+  Sound.tap();
+  const counts={};
+  pool.forEach(c=>counts[c]=(counts[c]||0)+1);
+  const colors=Object.keys(counts).sort((a,b)=>COLORS.indexOf(a)-COLORS.indexOf(b));
+  if(colors.length===1){ selectColor(src,colors[0]); return; }
+  App.picker={src,colors,counts};
+  renderPicker();
+  $('pickerOverlay').classList.add('show');
+}
+function renderPicker(){
+  const {src,colors,counts}=App.picker;
+  $('pickerSub').textContent=src.type==='factory'?'Fábrica — escolha uma cor':'Centro da mesa — escolha uma cor';
+  $('pickerColors').innerHTML=colors.map(c=>`<div class="picker-color c-${c}" data-pick="${c}"><span class="count">${counts[c]}</span></div>`).join('');
+}
+function closePicker(){ App.picker=null; $('pickerOverlay').classList.remove('show'); }
+function selectColor(src,color){
+  closePicker();
+  const st=App.state; const pi=myIndex();
+  if(!st || pi<0) return;
+  if(App.sel && App.sel.src.type===src.type && (src.type==='center' || App.sel.src.idx===src.idx) && App.sel.color===color){
+    App.sel=null; Sound.tap(); renderGame(); return;
+  }
+  Sound.pick();
+  const rows=validRows(st,pi,color);
+  App.sel={src,color,rows};
+  renderGame();
+}
+function onRowTap(r){
+  if(!App.sel) return;
+  if(!App.sel.rows.includes(r)){ toast('Fileira inválida'); Sound.error(); return; }
+  commitMove(App.sel.src,App.sel.color,r);
+}
+function commitMove(src,color,row){
+  App.sel=null;
+  if(row >= 0) Sound.place(); else Sound.floor();
+  if(App.mode==='host' || App.mode==='local' || App.mode==='bot'){
+    const st=App.state; const pi=st.current;
+    applyMove(st,pi,src,color,row);
+    broadcastState();
+    handleEndOfTurnUI();
+  } else {
+    if(App.conn) App.conn.send({type:'move',id:App.myId,src,color,row});
+    renderGame();
+  }
+}
+
+$('scr-game').addEventListener('click',(e)=>{
+  const chip = e.target.closest('[data-view-player]');
+  if(chip){ App.viewIdx = parseInt(chip.dataset.viewPlayer, 10); renderGame(); return; }
+  const row=e.target.closest('.brow');
+  if(row){
+    if(getViewIdx() !== myIndex()){ ensureViewingSelf(); return; }
+    onRowTap(parseInt(row.dataset.row,10)); return;
+  }
+  const floorBtn=e.target.closest('#btnFloor');
+  if(floorBtn){
+    if(getViewIdx() !== myIndex()){ ensureViewingSelf(); return; }
+    commitMove(App.sel.src,App.sel.color,-1); return;
+  }
+  const fac=e.target.closest('[data-factory]');
+  if(fac && !fac.classList.contains('empty')){
+    const idx = parseInt(fac.dataset.factory,10);
+    ensureViewingSelf();
+    openColorPicker({type:'factory',idx}); return;
+  }
+  const cen=e.target.closest('#centerArea');
+  if(cen){
+    const st=App.state;
+    if(st && (st.center.length>0 || st.firstMarkerInCenter)){ ensureViewingSelf(); openColorPicker({type:'center'}); }
+    return;
+  }
+});
+$('pickerColors').addEventListener('click',(e)=>{
+  const c=e.target.closest('[data-pick]');
+  if(!c || !App.picker) return;
+  selectColor(App.picker.src,c.dataset.pick);
+});
+$('pickerCancel').addEventListener('click',()=>{ Sound.tap(); closePicker(); });
+$('pickerOverlay').addEventListener('click',(e)=>{ if(e.target===$('pickerOverlay')){ Sound.tap(); closePicker(); } });
+$('btnLastRoundOk').addEventListener('click',()=>{ $('lastRoundOverlay').classList.remove('show'); handleEndOfTurnUI(); });
+$('btnRoundContinue').addEventListener('click',()=>{
+  $('roundOverlay').classList.remove('show');
+  const st=App.state;
+  const isFinal=st && st.phase==='over';
+  if(st) st.newWallCells=[];
+  if(isFinal){ LocalFlags.finalSummaryShown=true; showOver(); return; }
+  if(isBotPlayer(st.current)){ scheduleBotMove(); return; }
+  if(App.mode==='local') showPassScreen();
+  else renderGame();
+});
+$('btnBeginTurn').addEventListener('click',()=>{
+  show('scr-game'); renderGame();
+  if(isBotPlayer(App.state.current)) scheduleBotMove();
+});
+
+$('btnSound').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  const nowMuted = Sound.toggleMute();
+  const btn = $('btnSound');
+  btn.classList.toggle('muted', nowMuted);
+  btn.textContent = nowMuted ? '🔇' : '🔊';
+  if(!nowMuted) Sound.pick();
+});
+
+$('btnMusic').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  const nowMuted = Music.toggleMute();
+  const btn = $('btnMusic');
+  btn.classList.toggle('muted', nowMuted);
+  if(!nowMuted){
+    if(!Music.isPlaying()) Music.start();
+    btn.classList.add('playing');
+  } else {
+    btn.classList.remove('playing');
+  }
+});
+
+document.querySelectorAll('[data-play-mode]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    setupPlayMode = b.dataset.playMode;
+    document.querySelectorAll('[data-play-mode]').forEach(x=>x.classList.toggle('active', x === b));
+    $('friendsSetup').style.display = setupPlayMode==='friends' ? 'block' : 'none';
+    $('botSetup').style.display = setupPlayMode==='bot' ? 'block' : 'none';
+  });
+});
+document.querySelectorAll('[data-diff]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    setupDifficulty = b.dataset.diff;
+    document.querySelectorAll('[data-diff]').forEach(x=>x.classList.toggle('active', x === b));
+    const hints = {
+      easy:'Fácil: o bot joga aleatoriamente.',
+      medium:'Médio: o bot joga bem mas às vezes erra.',
+      hard:'Difícil: o bot sempre escolhe a melhor jogada.'
+    };
+    $('diffHint').textContent = hints[setupDifficulty];
+  });
+});
+document.querySelectorAll('[data-pcount]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const old=[];
+    for(let i=0;i<4;i++){ const el=$('setupName'+i); if(el) old.push(el.value); }
+    App.setupCount=parseInt(b.dataset.pcount,10);
+    renderSetupNames();
+    for(let i=0;i<App.setupCount;i++) if(old[i]) $('setupName'+i).value=old[i];
+  });
+});
+$('btnSetupStart').addEventListener('click',()=>{
+  if(setupPlayMode==='bot'){
+    const humanName=$('botHumanName').value.trim()||'Você';
+    startBotGame(humanName, setupDifficulty);
+  } else {
+    const names=[];
+    for(let i=0;i<App.setupCount;i++){
+      const el=$('setupName'+i);
+      const v=el?el.value.trim():'';
+      names.push(v||('Jogador '+(i+1)));
+    }
+    startLocalGame(App.setupCount,names);
+  }
+});
+$('btnSetupBack').addEventListener('click',()=>{ show('scr-home'); });
+$('btnCreate').addEventListener('click',()=>{ $('homeHint').textContent='Criando sala...'; hostCreateRoom(); });
+$('btnJoin').addEventListener('click',()=>{
+  const code=$('inpCode').value.trim().toUpperCase();
+  if(code.length!==5){ toast('Digite um código de 5 caracteres'); Sound.error(); return; }
+  App.pendingRoom=code;
+  $('joinRoomCode').textContent=code;
+  $('joinName').value = $('inpName').value.trim();
+  show('scr-guest-join');
+  setTimeout(()=>{ try{ $('joinName').focus(); }catch(e){} }, 300);
+});
+$('btnJoinConfirm').addEventListener('click',()=>{
+  const name=$('joinName').value.trim();
+  if(!name){ toast('Digite seu nome'); Sound.error(); return; }
+  $('inpName').value=name;
+  $('homeHint').textContent='Conectando à sala '+App.pendingRoom+'...';
+  guestJoin(App.pendingRoom);
+});
+$('btnJoinCancel').addEventListener('click',()=>{ show('scr-home'); $('homeHint').textContent='Cancelado.'; });
+$('btnLocal').addEventListener('click',openLocalSetup);
+$('btnStart').addEventListener('click',startMultiplayerGame);
+$('btnLeave').addEventListener('click',()=>{ location.href=location.pathname; });
+
+$('lobbyPlayers').addEventListener('click',(e)=>{
+  if(e.target.closest('[data-edit-me]')){
+    const me = App.lobby.players.find(p=>p.id===App.myId);
+    $('editNameInput').value = me ? me.name : '';
+    $('editNameOverlay').classList.add('show');
+    setTimeout(()=>{ try{ $('editNameInput').focus(); }catch(err){} }, 200);
+  }
+});
+$('btnEditNameConfirm').addEventListener('click',()=>{
+  const newName = $('editNameInput').value.trim();
+  if(!newName){ toast('Digite um nome'); Sound.error(); return; }
+  const me = App.lobby.players.find(p=>p.id===App.myId);
+  if(!me) return;
+  me.name = newName;
+  if(App.mode==='host'){ if($('inpName')) $('inpName').value = newName; updateLobbyUI(); broadcastLobby(); }
+  else { if(App.conn) App.conn.send({type:'nameUpdate', id:App.myId, name:newName}); updateLobbyUI(); }
+  $('editNameOverlay').classList.remove('show');
+  toast('Nome atualizado');
+});
+$('btnEditNameCancel').addEventListener('click',()=>{ $('editNameOverlay').classList.remove('show'); });
+$('editNameOverlay').addEventListener('click',(e)=>{ if(e.target === $('editNameOverlay')) $('editNameOverlay').classList.remove('show'); });
+
+$('btnNewGame').addEventListener('click',()=>{
+  resetLocalFlags();
+  const st=App.state;
+  if(!st) return;
+  if(App.mode==='local' || App.mode==='bot'){
+    const defs=st.players.map(p=>({id:p.id,name:p.name}));
+    App.state=newGame(defs); App.sel=null; App.viewIdx=null;
+    show('scr-game'); renderGame();
+  } else if(App.mode==='host'){
+    if(App.lobby && App.lobby.players.length>=2){
+      App.state=newGame(App.lobby.players); App.sel=null; App.viewIdx=null;
+      broadcastState();
+      show('scr-game'); renderGame();
+    } else { toast('Aguardando jogadores suficientes'); show('scr-home'); }
+  } else {
+    toast('Aguarde o anfitrião iniciar uma nova partida');
+    setTimeout(()=>{ location.href=location.pathname; },1200);
+  }
+});
+$('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname; });
+
+/* ============================================================
+   INIT — CORREÇÃO 2: unlock mais robusto
+            CORREÇÃO 3: retomada ao voltar do segundo plano
+   ============================================================ */
+(function init(){
+  let audioUnlocked = false;
+
+  const unlock = ()=>{
+    if(audioUnlocked){
+      // Se por algum motivo o ctx suspendeu de novo, tenta retomar
+      const c = Sound.getCtx();
+      if(c && c.state === 'suspended'){ try{ c.resume(); }catch(e){} }
+      return;
+    }
+
+    Sound.init();
+    const ctx = Sound.getCtx();
+    if(!ctx) return;
+
+    const doStart = ()=>{
+      if(audioUnlocked) return;
+      if(ctx.state !== 'running'){
+        // ainda não está pronto, deixa pra próxima interação
+        return;
+      }
+      audioUnlocked = true;
+      if(!Music.isPlaying() && !Music.isMuted()){
+        Music.start();
+      }
+      ['touchstart','pointerdown','mousedown','click','keydown'].forEach(ev=>{
+        document.removeEventListener(ev, unlock);
+      });
+    };
+
+    if(ctx.state === 'suspended'){
+      const p = ctx.resume();
+      if(p && typeof p.then === 'function'){
+        p.then(doStart).catch(doStart);
+      } else {
+        doStart();
+      }
+    } else if(ctx.state === 'running'){
+      doStart();
+    } else {
+      // estado 'closed' ou outro — apenas tenta de novo no próximo toque
+    }
+  };
+
+  ['touchstart','pointerdown','mousedown','click','keydown'].forEach(ev=>{
+    document.addEventListener(ev, unlock, {passive:true});
+  });
+
+  // CORREÇÃO 3: retomar a música quando o app volta do segundo plano
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden) return;
+    const ctx = Sound.getCtx();
+    if(!ctx) return;
+    const restart = ()=>{
+      if(Music.isPlaying() && !Music.isMuted()){
+        Music.restart();
+      }
+    };
+    if(ctx.state === 'suspended'){
+      const p = ctx.resume();
+      if(p && typeof p.then === 'function') p.then(restart).catch(restart);
+      else restart();
+    } else if(ctx.state === 'running'){
+      restart();
+    }
+  });
+
+  const params=new URLSearchParams(location.search);
+  const room=params.get('room');
+  if(room){
+    const code = room.toUpperCase();
+    App.pendingRoom = code;
+    $('inpCode').value = code;
+    $('joinRoomCode').textContent = code;
+    show('scr-guest-join');
+    setTimeout(()=>{ try{ $('joinName').focus(); }catch(e){} }, 350);
+  }
+})();
+</script>
+</body>
+</html>
