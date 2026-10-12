@@ -716,7 +716,7 @@
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 /* ============================================================
-   SOUND ENGINE — Web Audio API procedural
+   SOUND ENGINE
    ============================================================ */
 const Sound = (() => {
   let ctx = null;
@@ -792,7 +792,6 @@ const Sound = (() => {
 
 /* ============================================================
    MUSIC ENGINE — loop synth-pop (Freestyle inspired)
-   CORREÇÃO 1: start() aguarda o AudioContext ficar 'running'
    ============================================================ */
 const Music = (() => {
   let ctx = null;
@@ -971,29 +970,23 @@ const Music = (() => {
   }
 
   return {
-    // CORREÇÃO 1: só agenda as notas depois que o context está realmente 'running'
     start(){
       if(isPlaying) return;
       const c = getCtx();
       if(!c) return;
-
       const begin = () => {
         if(isPlaying) return;
-        if(c.state !== 'running') return; // ainda não está pronto; tenta de novo no próximo unlock
+        if(c.state !== 'running') return;
         isPlaying = true;
         currentStep = 0;
         nextNoteTime = c.currentTime + 0.08;
         if(timerId){ clearInterval(timerId); timerId = null; }
         timerId = setInterval(scheduler, LOOKAHEAD_MS);
       };
-
       if(c.state === 'suspended'){
         const p = c.resume();
-        if(p && typeof p.then === 'function'){
-          p.then(begin).catch(begin);
-        } else {
-          begin();
-        }
+        if(p && typeof p.then === 'function') p.then(begin).catch(begin);
+        else begin();
       } else if(c.state === 'running'){
         begin();
       }
@@ -1002,10 +995,7 @@ const Music = (() => {
       isPlaying = false;
       if(timerId){ clearInterval(timerId); timerId = null; }
     },
-    restart(){
-      this.stop();
-      this.start();
-    },
+    restart(){ this.stop(); this.start(); },
     isPlaying(){ return isPlaying; },
     isMuted(){ return muted; },
     setMuted(v){
@@ -1045,11 +1035,22 @@ let toastTimer=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id)); }
 
-function makeBag(){ const b=[]; for(const c of COLORS) for(let i=0;i<20;i++) b.push(c); return b; }
+/* ============================================================
+   SAQUINHO UNIFORME — 20 de cada cor (20% de chance cada)
+   ============================================================ */
+function makeBag(){
+  const b = [];
+  for(const c of COLORS) for(let i=0;i<20;i++) b.push(c);
+  return b;
+}
 function drawTiles(st,n){
   const out=[];
   for(let i=0;i<n;i++){
-    if(st.bag.length===0){ if(st.box.length===0) break; st.bag=shuffle(st.box.slice()); st.box.length=0; }
+    if(st.bag.length===0){
+      // Reabastece com saquinho NOVO e balanceado (20 de cada cor).
+      // Garante probabilidade IGUAL para todas as cores em cada rodada.
+      st.bag = shuffle(makeBag());
+    }
     out.push(st.bag.pop());
   }
   return out;
@@ -1829,15 +1830,13 @@ $('btnNewGame').addEventListener('click',()=>{
 $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname; });
 
 /* ============================================================
-   INIT — CORREÇÃO 2: unlock mais robusto
-            CORREÇÃO 3: retomada ao voltar do segundo plano
+   INIT — desbloqueio de áudio robusto + retomada no foreground
    ============================================================ */
 (function init(){
   let audioUnlocked = false;
 
   const unlock = ()=>{
     if(audioUnlocked){
-      // Se por algum motivo o ctx suspendeu de novo, tenta retomar
       const c = Sound.getCtx();
       if(c && c.state === 'suspended'){ try{ c.resume(); }catch(e){} }
       return;
@@ -1849,10 +1848,7 @@ $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname
 
     const doStart = ()=>{
       if(audioUnlocked) return;
-      if(ctx.state !== 'running'){
-        // ainda não está pronto, deixa pra próxima interação
-        return;
-      }
+      if(ctx.state !== 'running') return;
       audioUnlocked = true;
       if(!Music.isPlaying() && !Music.isMuted()){
         Music.start();
@@ -1864,15 +1860,10 @@ $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname
 
     if(ctx.state === 'suspended'){
       const p = ctx.resume();
-      if(p && typeof p.then === 'function'){
-        p.then(doStart).catch(doStart);
-      } else {
-        doStart();
-      }
+      if(p && typeof p.then === 'function') p.then(doStart).catch(doStart);
+      else doStart();
     } else if(ctx.state === 'running'){
       doStart();
-    } else {
-      // estado 'closed' ou outro — apenas tenta de novo no próximo toque
     }
   };
 
@@ -1880,15 +1871,12 @@ $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname
     document.addEventListener(ev, unlock, {passive:true});
   });
 
-  // CORREÇÃO 3: retomar a música quando o app volta do segundo plano
   document.addEventListener('visibilitychange', ()=>{
     if(document.hidden) return;
     const ctx = Sound.getCtx();
     if(!ctx) return;
     const restart = ()=>{
-      if(Music.isPlaying() && !Music.isMuted()){
-        Music.restart();
-      }
+      if(Music.isPlaying() && !Music.isMuted()) Music.restart();
     };
     if(ctx.state === 'suspended'){
       const p = ctx.resume();
