@@ -791,7 +791,7 @@ const Sound = (() => {
 })();
 
 /* ============================================================
-   MUSIC ENGINE — loop synth-pop (Freestyle inspired)
+   MUSIC ENGINE
    ============================================================ */
 const Music = (() => {
   let ctx = null;
@@ -841,8 +841,7 @@ const Music = (() => {
   }
 
   function kick(t){
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(150, t);
     osc.frequency.exponentialRampToValueAtTime(38, t + 0.09);
@@ -851,10 +850,8 @@ const Music = (() => {
     osc.connect(gain); gain.connect(master);
     osc.start(t); osc.stop(t + 0.24);
   }
-
   function snare(t){
-    const osc = ctx.createOscillator();
-    const og = ctx.createGain();
+    const osc = ctx.createOscillator(); const og = ctx.createGain();
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(180, t);
     osc.frequency.exponentialRampToValueAtTime(80, t + 0.08);
@@ -862,43 +859,28 @@ const Music = (() => {
     og.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
     osc.connect(og); og.connect(master);
     osc.start(t); osc.stop(t + 0.15);
-    const noise = ctx.createBufferSource();
-    noise.buffer = getNoise();
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 1400;
+    const noise = ctx.createBufferSource(); noise.buffer = getNoise();
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1400;
     const ng = ctx.createGain();
     ng.gain.setValueAtTime(0.28, t);
     ng.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
     noise.connect(hp); hp.connect(ng); ng.connect(master);
     noise.start(t); noise.stop(t + 0.16);
   }
-
   function hihat(t, accent){
-    const noise = ctx.createBufferSource();
-    noise.buffer = getNoise();
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 8000;
+    const noise = ctx.createBufferSource(); noise.buffer = getNoise();
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(accent ? 0.11 : 0.06, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
     noise.connect(hp); hp.connect(gain); gain.connect(master);
     noise.start(t); noise.stop(t + 0.06);
   }
-
   function bass(t, freq, dur){
-    const osc = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc2.type = 'square';
-    osc.frequency.value = freq;
-    osc2.frequency.value = freq;
-    osc2.detune.value = -7;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = 900;
-    lp.Q.value = 3.5;
+    const osc = ctx.createOscillator(); const osc2 = ctx.createOscillator();
+    osc.type = 'sawtooth'; osc2.type = 'square';
+    osc.frequency.value = freq; osc2.frequency.value = freq; osc2.detune.value = -7;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 3.5;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.0001, t);
     gain.gain.exponentialRampToValueAtTime(0.34, t + 0.008);
@@ -907,13 +889,9 @@ const Music = (() => {
     osc.start(t); osc.stop(t + dur + 0.03);
     osc2.start(t); osc2.stop(t + dur + 0.03);
   }
-
   function lead(t, freq, dur){
-    const osc = ctx.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
+    const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = freq;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
     lp.frequency.setValueAtTime(4000, t);
     lp.frequency.exponentialRampToValueAtTime(1800, t + dur);
     const gain = ctx.createGain();
@@ -923,15 +901,11 @@ const Music = (() => {
     osc.connect(lp); lp.connect(gain); gain.connect(master);
     osc.start(t); osc.stop(t + dur + 0.03);
   }
-
   function chordStab(t, freqs, dur){
     freqs.forEach((f, i) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.value = f;
+      const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = f;
       osc.detune.value = (i - 1) * 6;
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
       lp.frequency.setValueAtTime(2800, t);
       lp.frequency.exponentialRampToValueAtTime(900, t + dur);
       lp.Q.value = 5;
@@ -943,7 +917,6 @@ const Music = (() => {
       osc.start(t); osc.stop(t + dur + 0.03);
     });
   }
-
   function scheduleStep(step, time){
     const bar = Math.floor(step / STEPS_PER_BAR) % TOTAL_BARS;
     const sub = step % STEPS_PER_BAR;
@@ -959,7 +932,6 @@ const Music = (() => {
     if(sub === 5) lead(time, chord.notes[chord.notes.length-1] * 2, 0.13);
     if(sub === 7) lead(time, chord.notes[0] * 4, 0.13);
   }
-
   function scheduler(){
     if(!ctx || !isPlaying) return;
     while(nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD){
@@ -968,7 +940,6 @@ const Music = (() => {
       currentStep = (currentStep + 1) % TOTAL_STEPS;
     }
   }
-
   return {
     start(){
       if(isPlaying) return;
@@ -987,14 +958,9 @@ const Music = (() => {
         const p = c.resume();
         if(p && typeof p.then === 'function') p.then(begin).catch(begin);
         else begin();
-      } else if(c.state === 'running'){
-        begin();
-      }
+      } else if(c.state === 'running'){ begin(); }
     },
-    stop(){
-      isPlaying = false;
-      if(timerId){ clearInterval(timerId); timerId = null; }
-    },
+    stop(){ isPlaying = false; if(timerId){ clearInterval(timerId); timerId = null; } },
     restart(){ this.stop(); this.start(); },
     isPlaying(){ return isPlaying; },
     isMuted(){ return muted; },
@@ -1035,10 +1001,8 @@ let toastTimer=null;
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id)); }
 
-/* ============================================================
-   SAQUINHO UNIFORME — 20 de cada cor (20% de chance cada)
-   ============================================================ */
 function makeBag(){
+  // Distribuição uniforme: cada cor aparece exatamente 20 vezes (5 × 20 = 100 azulejos)
   const b = [];
   for(const c of COLORS) for(let i=0;i<20;i++) b.push(c);
   return b;
@@ -1047,8 +1011,7 @@ function drawTiles(st,n){
   const out=[];
   for(let i=0;i<n;i++){
     if(st.bag.length===0){
-      // Reabastece com saquinho NOVO e balanceado (20 de cada cor).
-      // Garante probabilidade IGUAL para todas as cores em cada rodada.
+      // Saquinho NOVO balanceado (20 de cada cor) — garante 20% para cada cor
       st.bag = shuffle(makeBag());
     }
     out.push(st.bag.pop());
@@ -1109,66 +1072,138 @@ function applyMove(st,pi,src,color,rowIdx){
   if(checkRoundEnd(st)) endRound(st);
 }
 function checkRoundEnd(st){ return st.factories.every(f=>f.length===0) && st.center.length===0; }
-function wallScore(wall,r,c){
-  let h=1,v=1;
-  for(let x=c-1;x>=0 && wall[r][x];x--) h++;
-  for(let x=c+1;x<5 && wall[r][x];x++) h++;
-  for(let y=r-1;y>=0 && wall[y][c];y--) v++;
-  for(let y=r+1;y<5 && wall[y][c];y++) v++;
-  let s=0;
-  if(h>1) s+=h;
-  if(v>1) s+=v;
-  if(h===1 && v===1) s+=1;
-  return s;
+
+/* ============================================================
+   PONTUAÇÃO NA PAREDE — Regra oficial do Azul
+   ------------------------------------------------------------
+   Ao colocar 1 azulejo na parede:
+     • Azulejo isolado (sem vizinhos ortogonais) → 1 ponto
+     • Conectado só na horizontal (N azulejos na linha, incluindo ele) → N pontos
+     • Conectado só na vertical (M azulejos na coluna, incluindo ele) → M pontos
+     • Conectado em ambos → N + M pontos
+   Vizinhos DIAGONAIS NÃO contam.
+   ============================================================ */
+function wallScore(wall, r, c){
+  // --- Conta a linha horizontal (esquerda + direita) ---
+  let hCount = 1; // conta o próprio azulejo
+  for(let x = c - 1; x >= 0; x--){
+    if(wall[r][x]) hCount++; else break;
+  }
+  for(let x = c + 1; x < 5; x++){
+    if(wall[r][x]) hCount++; else break;
+  }
+
+  // --- Conta a coluna vertical (cima + baixo) ---
+  let vCount = 1; // conta o próprio azulejo
+  for(let y = r - 1; y >= 0; y--){
+    if(wall[y][c]) vCount++; else break;
+  }
+  for(let y = r + 1; y < 5; y++){
+    if(wall[y][c]) vCount++; else break;
+  }
+
+  // --- Aplica a regra do Azul ---
+  const hasH = hCount > 1;
+  const hasV = vCount > 1;
+  if(hasH && hasV) return hCount + vCount; // encruzilhada: linha + coluna
+  if(hasH) return hCount;                  // apenas linha
+  if(hasV) return vCount;                  // apenas coluna
+  return 1;                                // azulejo isolado
 }
+
 function endRound(st){
   st.newWallCells=[];
   st.lastRoundDelta=st.players.map(p=>({id:p.id,delta:0}));
+
   for(const p of st.players){
-    const scoreBefore=p.score;
-    for(let r=0;r<5;r++){
-      const row=p.pattern[r];
-      if(row.length===r+1){
-        const color=row[0];
-        const col=(COLORS.indexOf(color)+r)%5;
-        p.wall[r][col]=color;
-        st.newWallCells.push({playerId:p.id,r,c:col});
-        p.score += wallScore(p.wall,r,col);
-        for(let i=1;i<row.length;i++) st.box.push(row[i]);
-        p.pattern[r]=[];
+    const scoreBefore = p.score;
+
+    // Processa fileiras de cima para baixo (r=0 a 4).
+    // Cada fileira COMPLETA é colocada na parede e pontuada individualmente,
+    // considerando o estado atual da parede (incluindo azulejos já colocados
+    // nesta mesma rodada). Isso segue a regra oficial.
+    // Fileiras INCOMPLETAS mantêm seus azulejos para a próxima rodada.
+    for(let r=0; r<5; r++){
+      const row = p.pattern[r];
+      if(row.length === r+1){
+        const color = row[0];
+        const col = (COLORS.indexOf(color) + r) % 5;
+
+        // 1) Coloca o azulejo na parede
+        p.wall[r][col] = color;
+        st.newWallCells.push({playerId:p.id, r, c:col});
+
+        // 2) Calcula e soma os pontos APÓS a colocação
+        const gained = wallScore(p.wall, r, col);
+        p.score += gained;
+
+        // 3) Azulejos restantes da fileira vão para a caixa
+        for(let i=1; i<row.length; i++) st.box.push(row[i]);
+        p.pattern[r] = [];
       }
-      // Fileira incompleta: mantém os azulejos
+      // Fileira incompleta: mantém os azulejos intactos
     }
-    let pen=0;
-    p.floor.forEach((item,i)=>{ pen+=FLOOR_PTS[Math.min(i,6)]; });
-    p.score=Math.max(0,p.score+pen);
+
+    // Penalidade da linha do chão
+    let pen = 0;
+    p.floor.forEach((item,i)=>{ pen += FLOOR_PTS[Math.min(i,6)]; });
+    p.score = Math.max(0, p.score + pen);
+
+    // Azulejos do chão voltam para a caixa ('first' não volta)
     p.floor.forEach(item=>{ if(item!=='first') st.box.push(item); });
-    p.floor=[];
-    const entry=st.lastRoundDelta.find(x=>x.id===p.id);
-    if(entry) entry.delta=p.score-scoreBefore;
+    p.floor = [];
+
+    const entry = st.lastRoundDelta.find(x=>x.id===p.id);
+    if(entry) entry.delta = p.score - scoreBefore;
   }
-  const ended=st.players.some(p=>p.wall.some(row=>row.every(c=>c)));
-  if(ended) finishGame(st);
-  else {
+
+  const ended = st.players.some(p => p.wall.some(row => row.every(c=>c)));
+  if(ended){
+    finishGame(st);
+  } else {
     st.round++;
-    st.current=st.firstPlayerNext;
-    st.center=[];
+    st.current = st.firstPlayerNext;
+    st.center = [];
     for(const f of st.factories){ f.length=0; f.push(...drawTiles(st,4)); }
-    st.firstMarkerInCenter=true;
+    st.firstMarkerInCenter = true;
   }
 }
+
+/* ============================================================
+   FIM DE JOGO — Bônus finais
+   +2 por linha horizontal completa
+   +7 por coluna vertical completa
+   +10 por cor completa (5 azulejos da mesma cor)
+   ============================================================ */
 function finishGame(st){
   st.phase='over';
   for(const p of st.players){
-    let rows=0,cols=0; const counts={};
-    for(let r=0;r<5;r++){
-      if(p.wall[r].every(c=>c)) rows++;
-      for(let c=0;c<5;c++){ const col=p.wall[r][c]; if(col) counts[col]=(counts[col]||0)+1; }
+    let rows=0, cols=0;
+    const counts = {};
+
+    // Conta linhas horizontais completas e cores na parede
+    for(let r=0; r<5; r++){
+      if(p.wall[r].every(c => c !== null && c !== undefined)) rows++;
+      for(let c=0; c<5; c++){
+        const color = p.wall[r][c];
+        if(color) counts[color] = (counts[color]||0) + 1;
+      }
     }
-    for(let c=0;c<5;c++){ let full=true; for(let r=0;r<5;r++) if(!p.wall[r][c]) full=false; if(full) cols++; }
-    let colorBonus=0;
-    for(const k in counts) if(counts[k]===5) colorBonus++;
-    p.bonus={rows,cols,colors:colorBonus,points:rows*2+cols*7+colorBonus*10};
+
+    // Conta colunas verticais completas
+    for(let c=0; c<5; c++){
+      let full = true;
+      for(let r=0; r<5; r++){
+        if(!p.wall[r][c]){ full = false; break; }
+      }
+      if(full) cols++;
+    }
+
+    // Conta quantas cores estão completas (5 azulejos na parede)
+    let colors = 0;
+    for(const k in counts) if(counts[k] === 5) colors++;
+
+    p.bonus = { rows, cols, colors, points: rows*2 + cols*7 + colors*10 };
     p.score += p.bonus.points;
   }
 }
@@ -1222,7 +1257,10 @@ function evaluateMove(st, botIdx, move){
     if(p.pattern[move.row].length + placed === cap){
       score += 20;
       const col = (COLORS.indexOf(move.color) + move.row) % 5;
-      score += wallScore(p.wall, move.row, col) * 3;
+      // Simula a pontuação que ganharia colocando na parede
+      const fakeWall = p.wall.map(row => row.slice());
+      fakeWall[move.row][col] = move.color;
+      score += wallScore(fakeWall, move.row, col) * 3;
     }
     score -= overflow * 5;
     score += move.row * 2;
@@ -1830,7 +1868,7 @@ $('btnNewGame').addEventListener('click',()=>{
 $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname; });
 
 /* ============================================================
-   INIT — desbloqueio de áudio robusto + retomada no foreground
+   INIT
    ============================================================ */
 (function init(){
   let audioUnlocked = false;
@@ -1841,32 +1879,24 @@ $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname
       if(c && c.state === 'suspended'){ try{ c.resume(); }catch(e){} }
       return;
     }
-
     Sound.init();
     const ctx = Sound.getCtx();
     if(!ctx) return;
-
     const doStart = ()=>{
       if(audioUnlocked) return;
       if(ctx.state !== 'running') return;
       audioUnlocked = true;
-      if(!Music.isPlaying() && !Music.isMuted()){
-        Music.start();
-      }
+      if(!Music.isPlaying() && !Music.isMuted()) Music.start();
       ['touchstart','pointerdown','mousedown','click','keydown'].forEach(ev=>{
         document.removeEventListener(ev, unlock);
       });
     };
-
     if(ctx.state === 'suspended'){
       const p = ctx.resume();
       if(p && typeof p.then === 'function') p.then(doStart).catch(doStart);
       else doStart();
-    } else if(ctx.state === 'running'){
-      doStart();
-    }
+    } else if(ctx.state === 'running'){ doStart(); }
   };
-
   ['touchstart','pointerdown','mousedown','click','keydown'].forEach(ev=>{
     document.addEventListener(ev, unlock, {passive:true});
   });
@@ -1875,16 +1905,12 @@ $('btnHomeFinal').addEventListener('click',()=>{ location.href=location.pathname
     if(document.hidden) return;
     const ctx = Sound.getCtx();
     if(!ctx) return;
-    const restart = ()=>{
-      if(Music.isPlaying() && !Music.isMuted()) Music.restart();
-    };
+    const restart = ()=>{ if(Music.isPlaying() && !Music.isMuted()) Music.restart(); };
     if(ctx.state === 'suspended'){
       const p = ctx.resume();
       if(p && typeof p.then === 'function') p.then(restart).catch(restart);
       else restart();
-    } else if(ctx.state === 'running'){
-      restart();
-    }
+    } else if(ctx.state === 'running'){ restart(); }
   });
 
   const params=new URLSearchParams(location.search);
